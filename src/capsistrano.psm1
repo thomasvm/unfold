@@ -131,4 +131,84 @@ function Import-DefaultTasks
     . $defaultPath
 }
 
-export-modulemember -function Import-DefaultTasks, Remove-Sessions, Invoke-Script -variable config
+$beforeTasks = @{}
+
+function Set-BeforeTask
+{
+    param(
+        [Parameter(Position=0,Mandatory=1)][string]$beforeTask,
+        [Parameter(Position=1,Mandatory=1)][string]$task
+    )
+
+    $psakeTask = Get-Task $beforeTask
+
+    If(-not($psakeTask)) {
+        throw "Unable to find task $beforeTask"
+    }
+
+     $beforeTaskList = $beforeTasks[$beforeTask]
+
+    If(-not($beforeTaskList)) {
+        $beforeTaskList = @()
+
+        If($psakeTask.preaction) {
+            throw "Cannot overrule existing postactin"
+        }
+
+        $psakeTask.preaction = {
+            $context = $psake.context.Peek()
+            Invoke-BeforeTasks $context.currentTaskName
+        }
+    }
+
+    $beforeTaskList = $beforeTaskList + $task
+    $beforeTasks[$beforeTask] = $beforeTaskList
+}
+
+$afterTasks = @{}
+
+function Set-AfterTask
+{
+    param(
+        [Parameter(Position=0,Mandatory=1)][string]$afterTask,
+        [Parameter(Position=1,Mandatory=1)][string]$task
+    )
+
+    $psakeTask = Get-Task $afterTask
+
+    If(-not($psakeTask)) {
+        throw "Unable to find task $afterTask"
+    }
+
+    $afterTaskList = $afterTasks[$afterTask]
+
+    If(-not($afterTaskList)) {
+        $afterTaskList = @()
+
+        If($psakeTask.postaction) {
+            throw "Cannot overrule existing postaction"
+        }
+    
+        $psakeTask.postaction = {
+            $context = $psake.context.Peek()
+            Invoke-AfterTasks $context.currentTaskName
+        }
+    }
+
+    $afterTaskList = $afterTaskList + $task
+    $afterTasks[$afterTask] = $afterTaskList
+}
+
+function Invoke-BeforeTasks($taskName) {
+    foreach($beforeTaskName in $beforeTasks[$taskName]) {
+        Invoke-Task $beforeTaskName
+    }
+}
+
+function Invoke-AfterTasks($taskName) {
+    foreach($afterTaskName in $afterTasks[$taskName]) {
+        Invoke-Task $afterTaskName
+    }
+}
+
+export-modulemember -function Import-DefaultTasks, Remove-Sessions, Invoke-Script, Set-BeforeTask, Set-AfterTask -variable config
