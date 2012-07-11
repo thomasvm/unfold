@@ -1,4 +1,4 @@
-task build {
+task unfold:build {
     write-host "Building"
 
     if(Get-Task "AfterBuild") {

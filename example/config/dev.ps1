@@ -1,0 +1,2 @@
+Set-Config scm git
+
