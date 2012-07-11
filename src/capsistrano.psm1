@@ -17,8 +17,27 @@ if($Args.Length) {
 
 $config = @{}
 
-if($properties.env) {
-    # todo add loading of config
+function Set-Config 
+{
+    param(
+        [Parameter(Position=0,Mandatory=1)]$key,
+        [Parameter(Position=1,Mandatory=1)]$value
+    )
+    $config[$key] = $value
+}
+
+. .\config\shared.ps1
+
+$env = $properties.env 
+
+if(-not($env)) {
+    $env = $config.default
+}
+
+$envPath = ".\config\$env.ps1"
+
+if($env -and (Test-Path $envPath)) {
+    . $envPath
 }
 
 $script:context = @{}
