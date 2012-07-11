@@ -29,7 +29,9 @@ function Set-Config
 }
 
 # load shared
-. .\config\shared.ps1
+If(Test-Path .\config\shared.ps1) {
+    . .\config\shared.ps1
+}
 
 # loading specifi for env
 $env = $properties.env 
