@@ -77,6 +77,9 @@ function Invoke-Task
                         & $task.PreAction
                     }
 
+                    # in case before block called task
+                    $currentContext.currentTaskName = $taskName
+
                     if ($currentContext.config.taskNameFormat -is [ScriptBlock]) {
                         & $currentContext.config.taskNameFormat $taskName
                     } else {
@@ -92,6 +95,9 @@ function Invoke-Task
                     if ($task.PostAction) {
                         & $task.PostAction
                     }
+                    
+                    # in case after block called task
+                    $currentContext.currentTaskName = $taskName
 
                     & $currentContext.taskTearDownScriptBlock
                     $task.Duration = $stopwatch.Elapsed
@@ -135,6 +141,7 @@ function Get-Task
 
     Assert $taskName ($msgs.error_invalid_task_name)
 
+    $currentContext = $psake.context.Peek()
     $taskKey = $taskName.ToLower()
 
     if ($currentContext.aliases.Contains($taskKey)) {
