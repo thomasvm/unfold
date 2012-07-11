@@ -126,7 +126,7 @@ function Invoke-Task
     $currentContext.executedTasks.Push($taskKey)
 }
 
-function Exists-PsakeTask
+function Get-Task
 {
     [CmdletBinding()]
     param(
@@ -142,7 +142,7 @@ function Exists-PsakeTask
         $taskKey = $taskName.ToLower()
     }
 
-    return $currentContext.tasks.Contains($taskKey)
+    $currentContext.tasks[$taskKey]
 }
 
 # .ExternalHelp  psake.psm1-help.xml
@@ -523,6 +523,16 @@ function Create-ConfigurationForNewContext {
 }
 
 function Configure-BuildEnvironment {
+    $frameworkDirs = Get-FrameworkDirs
+
+    $env:path = ($frameworkDirs -join ";") + ";$env:path"
+    # if any error occurs in a PS function then "stop" processing immediately
+    # this does not effect any external programs that return a non-zero exit code
+    $global:ErrorActionPreference = "Stop"
+}
+
+function Get-FrameworkDirs
+{
     $framework = $psake.context.peek().config.framework
     if ($framework.Length -ne 3 -and $framework.Length -ne 6) {
         throw ($msgs.error_invalid_framework -f $framework)
@@ -586,10 +596,7 @@ function Configure-BuildEnvironment {
 
     $frameworkDirs | foreach { Assert (test-path $_ -pathType Container) ($msgs.error_no_framework_install_dir_found -f $_)}
 
-    $env:path = ($frameworkDirs -join ";") + ";$env:path"
-    # if any error occurs in a PS function then "stop" processing immediately
-    # this does not effect any external programs that return a non-zero exit code
-    $global:ErrorActionPreference = "Stop"
+    return $frameworkDirs
 }
 
 function Cleanup-Environment {
@@ -718,4 +725,4 @@ $psake.build_script_dir = "" # contains a string with fully-qualified path to cu
 
 Load-Configuration
 
-export-modulemember -function invoke-psake, invoke-task, task, properties, include, formattaskname, tasksetup, taskteardown, framework, assert, exec -variable psake
+export-modulemember -function invoke-psake, invoke-task, get-task, task, properties, include, formattaskname, tasksetup, taskteardown, framework, assert, exec, get-frameworkdirs -variable psake

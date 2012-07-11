@@ -1,4 +1,25 @@
-Import-Module .\lib\credentials.psm1
+$scriptPath = $(Split-Path -parent $MyInvocation.MyCommand.path) 
+
+function Import-LocalModule($path) 
+{
+    import-Module (Join-Path $scriptPath $path)
+}
+
+remove-module [p]sake 
+Import-Localmodule .\lib\psake.psm1
+Import-LocalModule .\lib\credentials.psm1
+
+$properties = @{}
+
+if($Args.Length) {
+    $properties = $Args[0]
+}
+
+$config = @{}
+
+if($properties.env) {
+    # todo add loading of config
+}
 
 $script:context = @{}
 $currentContext = $script:context
@@ -43,6 +64,13 @@ function Invoke-Script
         $cred = Get-CMCredential $machine
         $newSession = new-pssession $machine -Credential $cred
 
+        $frameworkDirs = Get-FrameworkDirs
+
+        invoke-command -Session $newSession -argumentlist @($frameworkDirs) -ScriptBlock {
+            param($dirs)
+            $env:path = ($dirs -join ";") + ";$env:path"
+        }
+
         $currentContext.sessions[$machine] = $newSession
     }
 
@@ -78,3 +106,8 @@ function Remove-Sessions
     $currentContext.sessions.Clear()
 }
 
+function Import-DefaultTasks
+{
+    $defaultPath = join-path $scriptPath "tasks.ps1"
+    . $defaultPath
+}
