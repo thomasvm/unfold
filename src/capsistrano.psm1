@@ -5,6 +5,7 @@ function Import-LocalModule($path)
     import-Module (Join-Path $scriptPath $path) -Global
 }
 
+# Loading child modules
 remove-module [p]sake 
 Import-Localmodule .\lib\psake.psm1
 Import-LocalModule .\lib\credentials.psm1
@@ -15,6 +16,7 @@ if($Args.Length) {
     $properties = $Args[0]
 }
 
+# Loading configuration
 $config = @{}
 
 function Set-Config 
@@ -26,8 +28,10 @@ function Set-Config
     $config[$key] = $value
 }
 
+# load shared
 . .\config\shared.ps1
 
+# loading specifi for env
 $env = $properties.env 
 
 if(-not($env)) {
@@ -40,11 +44,13 @@ if($env -and (Test-Path $envPath)) {
     . $envPath
 }
 
+# setup context
 $script:context = @{}
 $currentContext = $script:context
 $currentContext.sessions = @{}
 $currentContext.config = $config
 
+# Remote script invocation
 function Invoke-Script 
 {
     param(
@@ -117,6 +123,7 @@ function Invoke-Script
     return $ret
 }
 
+# Remove all open sessions
 function Remove-Sessions
 {
     foreach($session in $currentContext.sessions.values) {
@@ -125,12 +132,14 @@ function Remove-Sessions
     $currentContext.sessions.Clear()
 }
 
+# Import default tasks
 function Import-DefaultTasks
 {
     $defaultPath = join-path $scriptPath "tasks.ps1"
     . $defaultPath
 }
 
+# BeforeTask and AfterTask functions
 $beforeTasks = @{}
 
 function Set-BeforeTask
