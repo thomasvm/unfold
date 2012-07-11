@@ -2,7 +2,7 @@ $scriptPath = $(Split-Path -parent $MyInvocation.MyCommand.path)
 
 function Import-LocalModule($path) 
 {
-    import-Module (Join-Path $scriptPath $path)
+    import-Module (Join-Path $scriptPath $path) -Global
 }
 
 remove-module [p]sake 
@@ -111,3 +111,5 @@ function Import-DefaultTasks
     $defaultPath = join-path $scriptPath "tasks.ps1"
     . $defaultPath
 }
+
+export-modulemember -function Import-DefaultTasks, Remove-Sessions, Invoke-Script -variable config
