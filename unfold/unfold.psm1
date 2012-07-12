@@ -63,7 +63,7 @@ function Invoke-Script
     if($machine -eq "") {
         $machine = $currentContext.config.machine
         if($machine -eq "" -or $machine -eq $null) {
-            Write-Error "$machine argument not provided and not in config"
+            Write-Error "machine argument not provided and not in config"
             return
         }
     }
@@ -73,7 +73,7 @@ function Invoke-Script
         $folder = pwd
       
         # change to base path 
-        if($config.basePath) {
+        if($config.basePath -and (Test-Path $config.basePath)) {
             cd $config.basePath
         } 
 
