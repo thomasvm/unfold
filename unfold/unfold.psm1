@@ -18,6 +18,7 @@ if($Args.Length) {
 
 # Loading configuration
 $config = @{}
+$config.wapguid = "349c5851-65df-11da-9384-00065b846f21"
 
 function Set-Config 
 {
@@ -26,6 +27,13 @@ function Set-Config
         [Parameter(Position=1,Mandatory=1)]$value
     )
     $config[$key] = $value
+}
+
+function ValueOrDefault($value, $default) {
+    If($value) {
+        return $value
+    }
+    return $default
 }
 
 # load shared
@@ -221,8 +229,6 @@ function Invoke-AfterTasks($taskName) {
         Invoke-Task $afterTaskName
     }
 }
-
-# Unfoldify
 
 
 export-modulemember -function Import-DefaultTasks, Remove-Sessions, Invoke-Script, Set-BeforeTask, Set-AfterTask -variable config
