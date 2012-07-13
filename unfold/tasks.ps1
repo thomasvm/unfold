@@ -102,6 +102,7 @@ task build -depends updatecode -description "Builds the code using msbuild" {
         }
 
         Foreach($file in $config.msbuild) {
+            Write-Host "Building file $file" -Fore Green
             msbuild /p:Configuration=$target /target:Rebuild $file
         }
     }
@@ -137,6 +138,45 @@ task release -depends build -description "Puts the built code inside a release f
     Invoke-Script {
         If(Test-Path $config.releasepath) {
             Write-Warning "$($config.releasepath) already exists, skipping..."
+            return
+        }
+
+        New-Item -type Directory $config.releasepath
+
+        # release the web project
+        If(Get-Task "customcopytorelease") {
+            Invoke-Task customcopytorelease
+        } Else {
+            Foreach($csproj in $config.msbuild) {
+               $wapGuids = Get-Content $csproj | Where-Object { $_.Contains($config.wapguid) }
+
+                if($wapGuids) {
+                    $source = "$(Split-Path $csproj)"
+                    $destination = ".\$($config.releasepath)\web"
+                    Write-Host "Copying $source to $destination"  -Fore Green
+                    New-Item -type Directory $destination 
+
+                    # copy all items
+                    Get-ChildItem $source -Recurse -Exclude @('*.cs', '*.csproj') | Copy-Item -Destination {Join-Path $destination $_.FullName.Substring($source.Length)}
+
+                    # remove empty folders
+                    Get-ChildItem -Recurse | Foreach-Object {
+                        If(-not($_.PSIsContainer)) {
+                            return
+                        }
+                        $subitems = Get-ChildItem -Recurse -Path $_.FullName
+                        if($subitems -eq $null)
+                        {
+                              Write-Host "Remove item: " + $_.FullName
+                              Remove-Item $_.FullName
+                        }
+                        $subitems = $null
+                    }
+                    # remove obj
+                    Remove-Item "$($config.releasepath)\web\obj" -Recurse
+                    break
+                }
+            }
         }
     }
 }
