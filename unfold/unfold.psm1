@@ -65,7 +65,8 @@ function Invoke-Script
 {
     param(
         [Parameter(Position=0,Mandatory=1)][scriptblock]$scriptblock,
-        [Parameter(Position=1,Mandatory=0)][string]$machine
+        [Parameter(Position=1,Mandatory=0)][string]$machine,
+        [Parameter(Position=2,Mandatory=0)][psobject]$arguments
     )
 
     if($machine -eq "") {
@@ -86,7 +87,7 @@ function Invoke-Script
         } 
 
         # Run the script
-        $ret = & $scriptblock -config $config
+        $ret = &$scriptblock $arguments
 
         # Back to original folder
         cd $folder
@@ -112,18 +113,18 @@ function Invoke-Script
     $s = $currentContext.sessions[$machine] 
 
     # invoke command on remote session
-    $ret = invoke-command -Session $s -argumentlist @($config, $scriptblock) -ScriptBlock {
-        param([psobject]$config, [string]$script)
+    $ret = invoke-command -Session $s -argumentlist @($config, $scriptblock, $arguments) -ScriptBlock {
+        param([psobject]$config, [string]$script, [psobject]$arguments)
     
         $scr = $ExecutionContext.InvokeCommand.NewScriptBlock($script)
 
         $folder = pwd
     
-        if($config.basePath) {
+        if($config.basePath -and (Test-Path $config.basePath)) {
             cd $config.basePath
         }
     
-        $ret = & $scr
+        $ret = & $scr $arguments
 
         cd $folder
 
