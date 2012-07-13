@@ -246,5 +246,56 @@ function Invoke-AfterTasks($taskName) {
     }
 }
 
+# Transform config
+function Convert-Configuration {
+    param(
+        [Parameter(Position=0,Mandatory=1)][string]$source,
+        [Parameter(Position=1,Mandatory=1)][string]$transformation,
+        [Parameter(Position=2,Mandatory=1)][string]$destination,
+        [Parameter(Position=3,Mandatory=0)][switch]$local
+    )
 
-export-modulemember -function Import-DefaultTasks, Remove-Sessions, Invoke-Script, Set-BeforeTask, Set-AfterTask -variable config
+    $vars = @{
+        source = $source
+        transformation = $transformation
+        destination = $destination
+    }
+
+    $block = {
+        param([psobject]$arguments)
+
+        $msbuild = @"
+<Project ToolsVersion="4.0" 
+         DefaultTargets="Demo" 
+         xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <UsingTask TaskName="TransformXml"
+             AssemblyFile="`$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\Web\Microsoft.Web.Publishing.Tasks.dll"/>
+
+    <Target Name="Demo">
+        <TransformXml Source="$($arguments.source)"
+                      Transform="$($arguments.transformation)"
+                      Destination="$($arguments.destination)"/>
+    </Target>
+</Project>
+"@
+
+        Set-Content "transform.msbuild" $msbuild
+
+        Exec -errormessage "transforming failed" {
+            msbuild "transform.msbuild"
+        }
+
+        Remove-item "transform.msbuild"
+    }
+
+    If($local) {
+        & $block $vars
+        return
+    }
+
+    Invoke-Script -arguments $vars $block
+    return
+}
+
+
+export-modulemember -function Import-DefaultTasks, Remove-Sessions, Invoke-Script, Set-BeforeTask, Set-AfterTask, Convert-Configuration -variable config
