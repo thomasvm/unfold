@@ -180,3 +180,34 @@ task release -depends build -description "Puts the built code inside a release f
         }
     }
 }
+
+task setupapppool -description "Creates application pool" {
+    If(Get-Task customsetupapppool) {
+        Invoke-Task customsetupapppool
+        return
+    }
+
+    Import-Module WebAdministration
+    $apppool = ValueOrDefault $config.apppool $config.project
+    $apppoolRuntime = ValueOrDefault $config.apppoolruntime "v4.0"
+
+    If($apppool -eq $null) {
+        $msg = @"
+"Unable to determine an application pool name. 
+If the apppool configuration setting is missing we will take the project name:
+- Set-Config apppool nameofpool
+- Set-Config project nameofproject"
+"@
+        throw $msg
+    }
+
+    Invoke-Script -arguments @{apppool=$apppool;runtime=$apppoolRuntime} {
+        param($arguments)
+
+        $appPool = "iis:\AppPools\$($arguments.apppool)"
+        If ((Test-Path $appPool) -eq $false) {
+            New-Item $appPool
+        }
+        Set-ItemProperty $appPool -name managedRuntimeVersion -value $arguments.runtime
+    }
+}
