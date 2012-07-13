@@ -104,7 +104,22 @@ function Invoke-Script
 
         invoke-command -Session $newSession -argumentlist @($frameworkDirs) -ScriptBlock {
             param($dirs)
+            # enrich path
             $env:path = ($dirs -join ";") + ";$env:path"
+
+            # Intall exec function
+            function Exec
+            {
+                [CmdletBinding()]
+                param(
+                    [Parameter(Position=0,Mandatory=1)][scriptblock]$cmd,
+                    [Parameter(Position=1,Mandatory=0)][string]$errorMessage = ($msgs.error_bad_command -f $cmd)
+                )
+                & $cmd
+                if ($lastexitcode -ne 0) {
+                    throw ("Exec: " + $errorMessage)
+                }
+            }
         }
 
         $currentContext.sessions[$machine] = $newSession
