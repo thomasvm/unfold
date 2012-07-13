@@ -10,9 +10,17 @@ $taskList = @($taskName)
 $nologo = $true
 
 $scriptPath = $(Split-Path -parent $MyInvocation.MyCommand.path) 
-remove-module capsistrano -ErrorAction SilentlyContinue
-import-module (join-path $scriptPath ..\src\capsistrano.psm1) -ArgumentList $properties
+remove-module unfold -ErrorAction SilentlyContinue
+
+try {
+    #first load locally
+    import-module (join-path $scriptPath ..\unfold\unfold.psm1) -ArgumentList $properties
+} catch {
+    # then from profile
+    import-module unfold -ArgumentList $properties
+}
 
 invoke-psake $buildFile $taskList "4.0" $null @{} $properties {} $nologo 
 
 Remove-Sessions
+remove-module unfold
