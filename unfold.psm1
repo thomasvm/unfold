@@ -330,6 +330,9 @@ function Install-Unfoldify {
     $templatePath = "$scriptPath\template\*"
 
     Copy-Item -Recurse $templatePath -Destination $installPath
+
+    Write-Host "removing unfold module"
+    Remove-Module unfold
 }
 
 Set-Alias unfoldify Install-Unfoldify
