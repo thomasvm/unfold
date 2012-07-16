@@ -318,4 +318,4 @@ function Get-CurrentFolder {
 }
 
 
-export-modulemember -function Import-DefaultTasks, Remove-Sessions, Invoke-Script, Set-BeforeTask, Set-AfterTask, Convert-Configuration -variable config
+export-modulemember -function Import-DefaultTasks, Remove-Sessions, Invoke-Script, Set-BeforeTask, Set-AfterTask, Convert-Configuration, Get-CurrentFolder, Get-DeployedFolders -variable config
