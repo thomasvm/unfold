@@ -317,4 +317,46 @@ task deploy -depends @('release','setupapppool','disablecurrentrelease','setupii
         }
         Set-Content "$($arguments.currentPath)\pathinfo.txt" -Value $config.releasepath
     }
+
+    Invoke-Task purgeoldreleases
+}
+
+task listremoteversions {
+    $remoteVersions = Get-DeployedFolders
+    $counter = 1
+
+    $current = Get-CurrentFolder
+
+    foreach($folder in $remoteVersions) {
+        $cntr = "$counter".PadLeft(2, '0')
+        Write-Host "$cntr`: " -Fore Green -NoNewLine
+        Write-Host $folder -NoNewLine
+        If($folder.Name -eq $current) {
+            Write-Host " (current)" -NoNewLine -Fore Yellow
+        }
+        Write-Host ""
+        $counter++
+    }
+}
+
+task purgeoldreleases {
+    $current = Get-CurrentFolder
+    $remoteVersions = Get-DeployedFolders 
+
+    $keep = ValueOrDefault $config.keep 5
+    $itemsToKeep = $remoteVersions.Length - $keep
+
+    for($i = 0; $i -lt $itemsToKeep; $i++) {
+        $folder = $remoteVersions[$i]
+
+        If($folder.Name -eq $current) {
+            continue
+        }
+
+        Write-Host "Removing $folder"
+        Invoke-Script -arguments $folder {
+            param($folder)
+            Remove-Item $folder -Recurse -Force
+        }
+    }
 }

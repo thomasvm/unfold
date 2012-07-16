@@ -297,5 +297,25 @@ function Convert-Configuration {
     return
 }
 
+# Get versions
+function Get-DeployedFolders {
+    return Invoke-Script {
+        $items = Get-ChildItem $config.basePath | Where-Object { $_.Name.EndsWith($config.project) -and $_ -ne "current" }
+        return $items
+    }
+}
+
+function Get-CurrentFolder {
+    $current = Invoke-Script {
+        $currentFolderInfoPath = "$($config.basePath)\current\pathinfo.txt"
+        If(Test-Path $currentFolderInfoPath) {
+            $current = Get-Content $currentFolderInfoPath
+            return $current
+        }
+    } 
+
+    return $current
+}
+
 
 export-modulemember -function Import-DefaultTasks, Remove-Sessions, Invoke-Script, Set-BeforeTask, Set-AfterTask, Convert-Configuration -variable config
