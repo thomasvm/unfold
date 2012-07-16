@@ -96,7 +96,7 @@ task build -depends updatecode -description "Builds the code using msbuild" {
 
     $config.msbuild = $buildFiles
     Invoke-Script {
-        $target = $config.target 
+        $target = $config.buildconfiguration
         If($target -eq $null) {
             $target = "Debug"
         }
