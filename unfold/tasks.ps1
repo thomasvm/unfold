@@ -201,6 +201,10 @@ If the apppool configuration setting is missing we will take the project name:
         throw $msg
     }
 
+    # ensure its on the config
+    $config.apppool = $apppool
+
+    # Now create it
     Invoke-Script -arguments @{apppool=$apppool;runtime=$apppoolRuntime} {
         param($arguments)
 
@@ -209,5 +213,108 @@ If the apppool configuration setting is missing we will take the project name:
             New-Item $appPool
         }
         Set-ItemProperty $appPool -name managedRuntimeVersion -value $arguments.runtime
+    }
+}
+
+task disablecurrentrelease {
+    If(Get-Task customdisablecurrentrelease) {
+        Invoke-Task customdisablecurrentrelease
+        return
+    }
+
+    If(Test-Path "$($config.basePath)\current\App_Offline.html") {
+        Move-Item "$($config.basePath)\current\App_Offline.html" "$($config.basePath)\current\App_Offline.htm"
+    }
+}
+
+task setupiis -description "Creates/updates the IIS website configuration" {
+    If(Get-Task customsetupiis) {
+        Invoke-Task customsetupiis
+        return
+    }
+
+    $iisName = ValueOrDefault $config.iisname $config.project
+
+    If (-not $iisName) {
+        Write-Error "Unable to determine name to use in IIS"
+        Write-Error "Either set iisname or project configuration variables"
+        Write-Error "e.g. Set-Config iisname `"my.website.com`""
+        throw "Invalid configuration"
+    }
+
+    If (-not $config.apppool) {
+        Write-Error "Unable to determine application pool"
+        Write-Error "Either invoke setupapppool task or set configuration variable"
+        Write-Error "e.g. Set-Config apppool `"myapppool`""
+        throw "Invalid configuration"
+    }
+
+    If (-not $config.releasepath) {
+        Write-Error "Current release path is not set"
+        Write-Error "Please invoke release task or set releasepath config variable"
+        Write-Error "yourself in case you are performing a custom operation"
+        throw "Invalid configuration"
+    }
+
+    $bindings = $config.bindings
+
+    If(-not $bindings) {
+        Write-Warning "It is not recommended to install website without bindings"
+        Write-Warning "Please set bindings in configuration file"
+        Write-Warning "e.g. Set-Config bindings @("
+        Write-Warning  "                          @{protocol=`"http`";bindingInformation=`"*:80:your.domain.com`"}"
+        Write-Warning  "                          )"
+        Write-Warning  "Now defaulting to port 8967"
+        $bindings = @(
+                        @{protocol="http";bindingInformation="*:8967:*"}
+                     )
+    }
+
+    Invoke-Script -arguments @{iisName=$iisName;bindings=$bindings} {
+        param($arguments)
+        $iisPath    = "iis:\\Sites\$($arguments.iisName)"
+        $outputPath = "$($config.basePath)\$($config.releasepath)\web"
+
+        If(Test-Path "$outputPath\App_Offline.html") {
+            Move-Item "$outputPath\App_Offline.html" -Destination "$outputPath\App_Offline.htm"
+        } 
+
+        $iisName = $arguments.iisName
+        $bindings = $arguments.bindings 
+
+        $apppool = $config.apppool
+
+        # Site Already set up?
+        If (Test-Path $iisPath) {
+            Set-ItemProperty $iisPath -name physicalPath    -value $outputPath
+            Set-ItemProperty $iisPath -name bindings        -value $bindings
+            Set-ItemProperty $iispath -name applicationPool -value "$apppool"
+        } Else {
+            New-Item $iisPath -physicalPath $outputPath -bindings $bindings -applicationPool $apppool
+        }
+    }
+}
+
+task deploy -depends @('release','setupapppool','disablecurrentrelease','setupiis') {
+    If(Get-Task customdeploy) {
+        Invoke-Task customdeploy
+        return
+    }
+
+    $currentPath = Join-Path $config.basePath "current" 
+
+    Invoke-Script -arguments @{currentPath=$currentPath} {
+        param($arguments) 
+
+        If(Test-Path $arguments.currentPath) {
+            Exec {
+                cmd /c rmdir $arguments.currentPath
+            }
+        }
+
+        Exec {
+            cmd /c "mklink /d $($arguments.currentPath) $($config.releasepath)"
+        }
+        Set-Content "$($arguments.currentPath)\pathinfo.txt" -Value $config.releasepath
     }
 }
