@@ -14,7 +14,7 @@ remove-module unfold -ErrorAction SilentlyContinue
 
 try {
     #first load locally
-    import-module (join-path $scriptPath ..\unfold\unfold.psm1) -ArgumentList $properties
+    import-module (join-path $scriptPath .\unfold\unfold.psm1) -ArgumentList $properties
 } catch {
     # then from profile
     import-module unfold -ArgumentList $properties
