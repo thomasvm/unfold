@@ -335,6 +335,4 @@ function Install-Unfold {
     Remove-Module unfold
 }
 
-Set-Alias unfoldify Install-Unfold
-
 export-modulemember -function Import-DefaultTasks, Remove-Sessions, Invoke-Script, Set-BeforeTask, Set-AfterTask, Convert-Configuration, Get-CurrentFolder, Get-DeployedFolders, Install-Unfold -variable config
