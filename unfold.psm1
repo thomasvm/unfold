@@ -317,5 +317,21 @@ function Get-CurrentFolder {
     return $current
 }
 
+function Install-Unfoldify {
+    param([Parameter(Position=0,Mandatory=1)][string]$installPath)
+
+    If(-not $installPath) {
+        If(-not (Test-Path "deployment")) {
+            New-Item -type Directory "deployment"
+        }
+        $installPath = ".\deployment"
+    }
+
+    $templatePath = "$scriptPath\template\*"
+
+    Copy-Item -Recurse $templatePath -Destination $installPath
+}
+
+Set-Alias unfoldify Install-Unfoldify
 
 export-modulemember -function Import-DefaultTasks, Remove-Sessions, Invoke-Script, Set-BeforeTask, Set-AfterTask, Convert-Configuration, Get-CurrentFolder, Get-DeployedFolders -variable config
