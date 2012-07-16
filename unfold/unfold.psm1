@@ -44,7 +44,7 @@ If(Test-Path .\config\shared.ps1) {
 # loading specifi for env
 $env = $properties.env 
 
-if(-not($env)) {
+if(-not $env) {
     $env = $config.default
 }
 
