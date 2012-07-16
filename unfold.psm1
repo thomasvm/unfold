@@ -330,9 +330,6 @@ function Install-Unfold {
     $templatePath = "$scriptPath\template\*"
 
     Copy-Item -Recurse $templatePath -Destination $installPath
-
-    Write-Host "removing unfold module"
-    Remove-Module unfold
 }
 
 export-modulemember -function Import-DefaultTasks, Remove-Sessions, Invoke-Script, Set-BeforeTask, Set-AfterTask, Convert-Configuration, Get-CurrentFolder, Get-DeployedFolders, Install-Unfold -variable config
