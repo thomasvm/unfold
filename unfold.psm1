@@ -317,7 +317,7 @@ function Get-CurrentFolder {
     return $current
 }
 
-function Install-Unfoldify {
+function Install-Unfold {
     param([Parameter(Position=0,Mandatory=1)][string]$installPath)
 
     If(-not $installPath) {
@@ -335,6 +335,6 @@ function Install-Unfoldify {
     Remove-Module unfold
 }
 
-Set-Alias unfoldify Install-Unfoldify
+Set-Alias unfoldify Install-Unfold
 
-export-modulemember -function Import-DefaultTasks, Remove-Sessions, Invoke-Script, Set-BeforeTask, Set-AfterTask, Convert-Configuration, Get-CurrentFolder, Get-DeployedFolders -variable config
+export-modulemember -function Import-DefaultTasks, Remove-Sessions, Invoke-Script, Set-BeforeTask, Set-AfterTask, Convert-Configuration, Get-CurrentFolder, Get-DeployedFolders, Install-Unfold -variable config
