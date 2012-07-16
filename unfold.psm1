@@ -332,4 +332,6 @@ function Install-Unfold {
     Copy-Item -Recurse $templatePath -Destination $installPath
 }
 
+Set-Alias unfoldify Install-Unfold -Scope 1
+
 export-modulemember -function Import-DefaultTasks, Remove-Sessions, Invoke-Script, Set-BeforeTask, Set-AfterTask, Convert-Configuration, Get-CurrentFolder, Get-DeployedFolders, Install-Unfold -variable config
