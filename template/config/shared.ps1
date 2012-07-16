@@ -17,6 +17,6 @@ Set-Config default dev
 Set-Config apppool "unfoldexample"
 # Set-Config apppoolruntime "v4.0" # Or v2.0 default is 4.0
 # Set-Config iisname "iiswebsitename" # default is project name
-Set-Bindings bindings @(
+Set-Config bindings @(
                         @{protocol="http";bindingInformation="*:80:my.domain.com"}
                         )
