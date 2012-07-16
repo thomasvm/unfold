@@ -318,7 +318,7 @@ function Get-CurrentFolder {
 }
 
 function Install-Unfold {
-    param([Parameter(Position=0,Mandatory=1)][string]$installPath)
+    param([Parameter(Position=0,Mandatory=0)][string]$installPath)
 
     If(-not $installPath) {
         If(-not (Test-Path "deployment")) {
