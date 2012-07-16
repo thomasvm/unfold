@@ -7,7 +7,7 @@ function ValueOrDefault($value, $default) {
 }
 
 task setup -description "creates the folder that will contain the releases" {
-    If(-not($config.basePath)) {
+    If(-not $config.basePath) {
         throw "config needs basePath property"
     }
 
@@ -55,14 +55,14 @@ task build -depends updatecode -description "Builds the code using msbuild" {
     $buildFiles = $config.msbuild
 
     # not specified in config? try to locate a proper solution
-    if(-not($buildFile)) {
+    if(-not $buildFile) {
         $buildFiles = Invoke-Script {
             # Try to find web project
             $csprojFiles = Get-ChildItem code -include *.csproj -Recurse
 
             $buildFiles = @()
 
-            if(-not($csprojFiles)) {
+            if(-not $csprojFiles) {
                 $csprojFiles = @()
             }
 
@@ -89,7 +89,7 @@ task build -depends updatecode -description "Builds the code using msbuild" {
         }
     }
 
-    if(-not($buildFiles)) {
+    if(-not $buildFiles) {
         Write-Warning "No applicable build file found, skipping."
         return
     }
@@ -161,7 +161,7 @@ task release -depends build -description "Puts the built code inside a release f
 
                     # remove empty folders
                     Get-ChildItem -Recurse | Foreach-Object {
-                        If(-not($_.PSIsContainer)) {
+                        If(-not $_.PSIsContainer) {
                             return
                         }
                         $subitems = Get-ChildItem -Recurse -Path $_.FullName
