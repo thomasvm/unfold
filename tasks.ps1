@@ -1,4 +1,3 @@
-
 function ValueOrDefault($value, $default) {
     If($value) {
         return $value
@@ -216,7 +215,7 @@ If the apppool configuration setting is missing we will take the project name:
     }
 }
 
-task disablecurrentrelease {
+task uninstallcurrentrelease {
     If(Get-Task customdisablecurrentrelease) {
         Invoke-Task customdisablecurrentrelease
         return
@@ -295,12 +294,7 @@ task setupiis -description "Creates/updates the IIS website configuration" {
     }
 }
 
-task deploy -depends @('release','setupapppool','disablecurrentrelease','setupiis') {
-    If(Get-Task customdeploy) {
-        Invoke-Task customdeploy
-        return
-    }
-
+task finalize {
     $currentPath = Join-Path $config.basePath "current" 
 
     Invoke-Script -arguments @{currentPath=$currentPath} {
@@ -319,6 +313,49 @@ task deploy -depends @('release','setupapppool','disablecurrentrelease','setupii
     }
 
     Invoke-Task purgeoldreleases
+}
+
+task deploy -depends @('release','setupapppool','uninstallcurrentrelease','setupiis', 'finalize')
+
+task rollback {
+    # Index in versions is 1-based
+    $rollbackTo = $properties.to
+    $versions = Get-DeployedFolders
+
+    If(-not($versions) -or $versions.Length -le 1) {
+        Write-Error "Unable to rollback, not enough versions deployed"
+        throw "Operation not supported"
+    }
+
+    $current = Get-CurrentFolder
+
+    # parameter not provided? current - 1
+    If(-not $rollbackTo) {
+        $currentIndex = 1..($versions.Length) | Where-Object { $versions[$_].Name -eq $current }
+
+        If($currentIndex) {
+            $rollbackTo = $currentIndex
+        } Else {
+            Write-Error "Unable to determine version to rollback to"
+            Write-Error "Current version can not be determined"
+        }
+    } 
+
+    $releasePath = $versions[$rollbackTo - 1].Name
+
+    If($current -eq $releasePath) {
+        Write-Warning "Target version is same as current $current, skipping..." 
+        return
+    }
+    Write-Host "Rolling back to $releasePath" -Fore Green
+
+    Invoke-Task setupapppool
+    Invoke-Task uninstallcurrentrelease
+
+    $config.releasepath = $releasePath
+
+    Invoke-Task setupiis
+    Invoke-Task finalize
 }
 
 task listremoteversions {
