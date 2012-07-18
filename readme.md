@@ -10,9 +10,11 @@ Installation is straight-forward. Simply `git clone` this repository into your m
 
 The following piece of code will do just that:
 
+'''posh
         $target = $env:PSModulePath.Split(';')[0]
         Set-Location $target
         git clone https://github.com/thomasvm/unfold.git
+'''        
 
 Once that's done, you can start using Unfold. 
 
