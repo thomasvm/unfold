@@ -317,7 +317,7 @@ task finalize {
 
 task deploy -depends @('release','setupapppool','uninstallcurrentrelease','setupiis', 'finalize')
 
-task rollback {
+task rollback -description "Rolls back to a previous version" {
     # Index in versions is 1-based
     $rollbackTo = $properties.to
     $versions = Get-DeployedFolders
@@ -358,7 +358,7 @@ task rollback {
     Invoke-Task finalize
 }
 
-task listremoteversions {
+task listremoteversions -description "Lists all versions available on the target" {
     $remoteVersions = Get-DeployedFolders
     $counter = 1
 
@@ -376,7 +376,7 @@ task listremoteversions {
     }
 }
 
-task purgeoldreleases {
+task purgeoldreleases -description "Removes old releases" {
     $current = Get-CurrentFolder
     $remoteVersions = Get-DeployedFolders 
 
