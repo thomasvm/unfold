@@ -21,8 +21,10 @@ Once that's done, you can start using Unfold.
 ## Unfoldify-ing a project
 Just like Capistrano, configuring an Unfold deployment starts with Unfoldify-ing your project. Tod do so, simply open up a Powershell inside your project and issue the following commands
 
+```posh
         Import-Module unfold
         unfoldify
+```
 
 This will create a `deployment` folder, for a full explanation you can skip to the deployment structure section. For getting up and running quickly, check QuickStart
 
@@ -33,7 +35,6 @@ Now that you project is unfoldified, go through the following steps:
 2. Open a powershell command-line into the deployment folder and execute 
 
         .\unfold.ps1 deploy -properties @{env="dev"}
-
    If your default configuration is still set to dev, youc an skip the `-properties` part
 
 3. check the output and adjust the configuration as needed
@@ -76,6 +77,7 @@ When you open one of the configuration files, you'll see that it is a concatenat
 
 The `shared.ps1` looks more or less like this:
 
+```posh
         # Set project name
         Set-Config project "unfold-example"
         
@@ -86,14 +88,16 @@ The `shared.ps1` looks more or less like this:
         
         # Default environment to deploy to
         Set-Config default dev
+```
 
 The default `dev.ps1` looks like this:
 
+```posh
         Set-Config basePath "<a folder somewhere>"
         
         # local machine
         Set-Config machine "localhost"
-
+```
 As you can see, the `dev.ps1` one contains settings that are environment specific, while the `shared.ps1` file contains settings that will be shared amongst different environments. You're free to alter these settings or to add custom configuration settings should you need them, e.g. the locations of your log files, or connection strings for running a database migration tool
 
 ## Usage
@@ -117,9 +121,11 @@ Executing Unfold happens through the `unfold.ps1` script. The following options 
 
   This is one of the building blocks of Unfold. Basically it allows you to run a Script Block on the target of your deployment. If the target is your local machine, then the script will simply be executed on the `config.basePath` path, if the target is a remote machine, then a remote session is opened (if not already) and the script is executed on the remote machine, also in the `config.basePath` path. This following piece of code for example will create a new `logs` folder on your deployment environment.
 
+```posh
         Invoke-Script {
             New-Item -type Directory -Name "logs"
         }
+```
 
 * `Convert-Configuration`        
 
@@ -129,6 +135,7 @@ Executing Unfold happens through the `unfold.ps1` script. The following options 
 * Every default task is fully overrideable by defining a task that have the same name prefixed with `custom`
 * You can _extend_ any task by executing additional tasks before or after them. To do so, you simply need to create a custom task and then use the `Set-AfterTask` or `Set-BeforeTask` functions to make sure they are executed before or after the mentioned task
 
+```posh
         # Add custom tasks, for example one to
         # setup logs folder in root
         task createlogs -description "Creates logs folder in root" {
@@ -142,6 +149,7 @@ Executing Unfold happens through the `unfold.ps1` script. The following options 
         
         # Set it to execute after setup
         Set-AfterTask setup createlogs        
+```
 
 ### TODO
 
