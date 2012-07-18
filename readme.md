@@ -121,7 +121,7 @@ Executing Unfold happens through the `unfold.ps1` script. The following options 
 
 * `Convert-Configuration`        
 
-  Applying .config file transformations from a command-line is overly complex, this helper functions simply needs 3 parameters: the input config, the transform config file and the output path.There's also a -local switch, that allows you to run the transformation locally (in the context where you are executing unfold) or on the deployment target. Executing transformations has never been easier. 
+  Applying .config file [transformations](http://msdn.microsoft.com/en-us/library/dd465326.aspx) from a command-line is overly complex, this helper functions simply needs 3 parameters: the input config, the transform config file and the output path.There's also a -local switch, that allows you to run the transformation locally (in the context where you are executing unfold) or on the deployment target. Executing transformations has never been easier. 
 
 ## Customizing
 * Every default task is fully overrideable by defining a task that have the same name prefixed with `custom`
