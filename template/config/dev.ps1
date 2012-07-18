@@ -1,6 +1,6 @@
 Set-Config basePath "<a folder somewhere>"
 
-# local machine
+# local machine, this won't require a Powershell Remoting config
 Set-Config machine "localhost"
 
 # For remotes, credentials are taken out of Windows Credential Manager
