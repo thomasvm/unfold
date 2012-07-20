@@ -20,13 +20,56 @@ if($Args.Length) {
 $config = @{}
 $config.wapguid = "349c5851-65df-11da-9384-00065b846f21"
 
+$configEnvironments = new-object system.collections.stack 
+
 function Set-Config 
 {
     param(
         [Parameter(Position=0,Mandatory=1)]$key,
         [Parameter(Position=1,Mandatory=1)]$value
     )
-    $config[$key] = $value
+
+    If($configEnvironments.Count) {
+        $environment = $configEnvironments.Peek()
+        $config[$environment][$key] = $value
+    } Else {
+        $config[$key] = $value
+    }
+}
+
+function Set-Environment
+{
+    param(
+        [Parameter(Position=0,Mandatory=1)][string]$name,
+        [Parameter(Position=1,Mandatory=1)][scriptblock]$script
+    )
+
+    $configEnvironments.Push($name)
+    $config[$name] = @{}
+
+    . $script
+
+    $undo = $configEnvironments.Pop()
+}
+
+function Initialize-Configuration {
+    # loading specifi for env
+    $env = $properties.env 
+    
+    if(-not $env) {
+        $env = $config.default
+    }
+
+    Write-Host "Current environment is $env"
+
+    If(-not $config[$env]) {
+        return
+    }
+
+    foreach($key in $config[$env].Keys) {
+        $val = $config[$env][$key]
+        $config[$key] = $val
+    }
 }
 
 function ValueOrDefault($value, $default) {
@@ -34,24 +77,6 @@ function ValueOrDefault($value, $default) {
         return $value
     }
     return $default
-}
-
-# load shared
-If(Test-Path .\config\shared.ps1) {
-    . .\config\shared.ps1
-}
-
-# loading specifi for env
-$env = $properties.env 
-
-if(-not $env) {
-    $env = $config.default
-}
-
-$envPath = ".\config\$env.ps1"
-
-if($env -and (Test-Path $envPath)) {
-    . $envPath
 }
 
 # setup context
@@ -317,6 +342,7 @@ function Get-CurrentFolder {
     return $current
 }
 
+# Installing unfold
 function Install-Unfold {
     param([Parameter(Position=0,Mandatory=0)][string]$installPath)
 
@@ -332,6 +358,7 @@ function Install-Unfold {
     Copy-Item -Recurse $templatePath -Destination $installPath
 }
 
-Set-Alias unfoldify Install-Unfold -Scope 1
-
-export-modulemember -function Import-DefaultTasks, Remove-Sessions, Invoke-Script, Set-BeforeTask, Set-AfterTask, Convert-Configuration, Get-CurrentFolder, Get-DeployedFolders, Install-Unfold -variable config
+export-modulemember -function Set-Config, Set-Environment, `
+                              Initialize-Configuration, Import-DefaultTasks, Remove-Sessions, `
+                              Invoke-Script, Set-BeforeTask, Set-AfterTask, Convert-Configuration, `
+                              Get-CurrentFolder, Get-DeployedFolders, Install-Unfold -variable config
