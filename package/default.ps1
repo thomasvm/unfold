@@ -20,6 +20,10 @@ task Setup -depends Cleanup {
     Copy-Item -Recurse ..\lib $contentFolder
 
     Copy-Item ..\template\* "pkg\content\deployment"
+
+    $toolsFolder = "pkg\tools"
+    New-Item -type Directory $toolsFolder
+    Copy-Item "Install.ps1" $toolsFolder
 }
 
 task Package -depends Setup {
@@ -36,6 +40,6 @@ function SetNuSpecVersionInfo {
     (Get-Content "Unfold.nuspec") | Foreach-Object {
         $_ -replace 'PKG_VERSION', $config.version `
            -replace 'PKG_RELEASENOTES', $config.releaseNotes
-        } | Set-Content "pkg\Cloudinary.nuspec"
+        } | Set-Content "Unfold.nuspec"
 }
 
