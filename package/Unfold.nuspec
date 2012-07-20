@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Unfold</id>
+    <version>PKG_VERSION</version>
+    <authors>Thomas Van Machelen</authors>
+    <owners>Thomas Van Machelen</owners>
+    <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
+    <projectUrl>https://github.com/thomasvm/unfold</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Capistrano for .net</description>
+    <releaseNotes>PKG_RELEASENOTES</releaseNotes>
+    <copyright>Copyright 2012</copyright>
+    <tags>asp.net deployment capistrano powershell</tags>
+  </metadata>
+</package>
