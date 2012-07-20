@@ -5,7 +5,6 @@ param(
     [System.Collections.Hashtable]$properties = @{},
     [Parameter(Position=2, Mandatory=0)]
     [switch]$docs = $false
-
 )
 
 $buildFile = "deploy.ps1"
@@ -15,22 +14,17 @@ $nologo = $true
 $scriptPath = $(Split-Path -parent $MyInvocation.MyCommand.path) 
 remove-module unfold -ErrorAction SilentlyContinue
 
-# Prefer local import if exists
-$import = ".\unfold\unfold.psm1"
-
-If(-not (Test-Path $import)) {
-    $import = "unfold"
+try {
+    #first load locally
+    import-module (join-path $scriptPath .\unfold\unfold.psm1) -ArgumentList $properties
+} catch {
+    # then from profile
+    import-module unfold -ArgumentList $properties
 }
 
-# reload if already loaded
-If(Get-Module unfold) {
-    Remove-Module unfold
-}
-
-# then from profile
-import-module unfold -ArgumentList $properties
-
-invoke-psake $buildFile $taskList "4.0" $docs @{} $properties {} $nologo 
+invoke-psake $buildFile $taskList "4.0" $docs @{} $properties {
+    Initialize-Configuration
+} $nologo 
 
 Remove-Sessions
-Remove-Module unfold
+remove-module unfold

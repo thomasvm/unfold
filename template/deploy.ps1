@@ -1,19 +1,35 @@
-# Import default unfold tasks
+# Configuration
+Set-Config project "<projectname>"
+
+Set-Config scm git
+Set-Config repository "<gitrepository>"
+
+# Environment to use when not specified
+Set-Config default dev
+
+# For custom apppool name
+# Set-Config apppool "your.apppool"
+
+Set-Environment dev {
+    Set-Config basePath "<deploypath>" #e.g. c:\inetpub\wwwroot\project
+
+    # machine to deploy to
+    Set-Config machine "localhost"
+    # For remote machines, specify ip-adres or machine name
+    # the credentials must be added to the Windows Credential Manager
+    # as a Generic Credential
+    # Set-Config machine "123.456.0.78"
+    # Set-Config machine "your.machine.name"
+}
+
+# Tasks
 Import-DefaultTasks
 
-# set default task to deploy
-task Default -depends "deploy"
+task Default -depends "release"
 
-# Add custom tasks, for example one to
-# setup logs folder in root
-# task createlogs -description "Creates logs folder in root" {
-#     # Execute in remote location
-#     Invoke-Script {
-#         If(-not(Test-Path $config.basePath)) {
-#             New-Item -type Directory -Name logs
-#         }
-#     }
-# }
-# 
-# # Set it to execute after setup
-# Set-AfterTask setup createlogs
+task ipconfig {
+    Invoke-Script {
+        ipconfig
+    }
+}
+
