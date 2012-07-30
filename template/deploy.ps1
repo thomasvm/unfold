@@ -7,6 +7,10 @@ Set-Config repository "<gitrepository>"
 # Environment to use when not specified
 Set-Config default dev
 
+# Specify a custom set of build files, don't forget
+# to prepend with ".\code\" because that is the remote checkout folder
+# Set-Config msbuild = @('.\code\path\to\build.csproj')
+
 # For custom apppool name
 # Set-Config apppool "your.apppool"
 
@@ -25,11 +29,13 @@ Set-Environment dev {
 # Tasks
 Import-DefaultTasks
 
-task Default -depends "release"
+# Set deploy as default task
+task Default -depends "deploy"
 
-task ipconfig {
-    Invoke-Script {
-        ipconfig
-    }
-}
+# Custom task
+# task ipconfig {
+#     Invoke-Script {
+#         ipconfig
+#     }
+# }
 
