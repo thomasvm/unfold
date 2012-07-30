@@ -14,13 +14,15 @@ $nologo = $true
 $scriptPath = $(Split-Path -parent $MyInvocation.MyCommand.path) 
 remove-module unfold -ErrorAction SilentlyContinue
 
-try {
-    #first load locally
-    import-module (join-path $scriptPath .\unfold\unfold.psm1) -ArgumentList $properties
-} catch {
-    # then from profile
-    import-module unfold -ArgumentList $properties
+# First try local unfold
+$import = join-path $scriptPath .\unfold\unfold.psm1
+
+# Then from profile
+If(-not (Test-Path $import) {
+    $import = "unfold"
 }
+
+import-module (join-path $scriptPath .\unfold\unfold.psm1) -ArgumentList $properties
 
 invoke-psake $buildFile $taskList "4.0" $docs @{} $properties {
     Initialize-Configuration
