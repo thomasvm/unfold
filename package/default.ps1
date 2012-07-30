@@ -1,7 +1,8 @@
 $config = New-Object PSObject -property @{ 
-    version="0.1.0";
+    version="0.1.1";
     releaseNotes=@"
-Initial release
+Updated description
+Better template
 "@
 }
 
