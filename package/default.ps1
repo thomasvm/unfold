@@ -1,5 +1,5 @@
 $config = New-Object PSObject -property @{ 
-    version="0.0.1";
+    version="0.1.0";
     releaseNotes=@"
 Initial release
 "@
@@ -34,6 +34,10 @@ task Package -depends Setup {
     cd ..
     Copy-Item pkg\Unfold.*.nupkg .
     Remove-Item -Recurse pkg
+}
+
+task Push -depends Package {
+    Exec { .\.nuget\nuget.exe push "Unfold.$($config.version).nupkg" }
 }
 
 function SetNuSpecVersionInfo {

@@ -8,7 +8,7 @@
     <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
     <projectUrl>https://github.com/thomasvm/unfold</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Capistrano for .net</description>
+    <description>Capistrano-like deployment for .net</description>
     <releaseNotes>PKG_RELEASENOTES</releaseNotes>
     <copyright>Copyright 2012</copyright>
     <tags>asp.net deployment capistrano powershell</tags>
