@@ -180,7 +180,7 @@ task release -depends build -description "Puts the built code inside a release f
     }
 }
 
-task setupapppool -description "Creates application pool" {
+task setupapppool -description "Configures application pool" {
     If(Get-Task customsetupapppool) {
         Invoke-Task customsetupapppool
         return
@@ -215,7 +215,7 @@ If the apppool configuration setting is missing we will take the project name:
     }
 }
 
-task uninstallcurrentrelease {
+task uninstallcurrentrelease -description "If possible: puts App_Offline in place to stop the application" {
     If(Get-Task customdisablecurrentrelease) {
         Invoke-Task customdisablecurrentrelease
         return
@@ -294,7 +294,7 @@ task setupiis -description "Creates/updates the IIS website configuration" {
     }
 }
 
-task finalize {
+task finalize -depends "Creates a link pointing to current release" {
     $currentPath = Join-Path $config.basePath "current" 
 
     Invoke-Script -arguments @{currentPath=$currentPath} {
@@ -315,7 +315,7 @@ task finalize {
     Invoke-Task purgeoldreleases
 }
 
-task deploy -depends @('release','setupapppool','uninstallcurrentrelease','setupiis', 'finalize')
+task deploy -depends @('release','setupapppool','uninstallcurrentrelease','setupiis', 'finalize') -description "Deploys project"
 
 task rollback -description "Rolls back to a previous version" {
     # Index in versions is 1-based
