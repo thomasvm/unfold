@@ -54,7 +54,7 @@ task build -depends updatecode -description "Builds the code using msbuild" {
     $buildFiles = $config.msbuild
 
     # not specified in config? try to locate a proper solution
-    if(-not $buildFile) {
+    if(-not $buildFiles) {
         $buildFiles = Invoke-Script {
             # Try to find web project
             $csprojFiles = Get-ChildItem code -include *.csproj -Recurse
