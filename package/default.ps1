@@ -1,5 +1,5 @@
 $config = New-Object PSObject -property @{ 
-    version="0.1.1";
+    version="0.1.2";
     releaseNotes=@"
 Updated description
 Better template
