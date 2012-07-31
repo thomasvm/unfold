@@ -22,7 +22,7 @@ If(-not (Test-Path $import)) {
     $import = "unfold"
 }
 
-import-module (join-path $scriptPath .\unfold\unfold.psm1) -ArgumentList $properties
+import-module $import -ArgumentList $properties
 
 invoke-psake $buildFile $taskList "4.0" $docs @{} $properties {
     Initialize-Configuration
