@@ -102,7 +102,10 @@ task build -depends updatecode -description "Builds the code using msbuild" {
 
         Foreach($file in $config.msbuild) {
             Write-Host "Building file $file" -Fore Green
-            msbuild /p:Configuration=$target /target:Rebuild $file
+            # Wrap in exec to stop on failure
+            Exec {
+                msbuild /p:Configuration=$target /target:Rebuild $file
+            }
         }
     }
 }
