@@ -57,7 +57,7 @@ function Initialize-Configuration {
     $env = $properties.env 
     
     if(-not $env) {
-        $env = $config.default
+        $env = ValueOrDefault $config.default dev
     }
 
     Write-Host "Current environment is $env"
