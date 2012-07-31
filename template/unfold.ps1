@@ -18,7 +18,7 @@ remove-module unfold -ErrorAction SilentlyContinue
 $import = join-path $scriptPath .\unfold\unfold.psm1
 
 # Then from profile
-If(-not (Test-Path $import) {
+If(-not (Test-Path $import)) {
     $import = "unfold"
 }
 
