@@ -12,7 +12,7 @@ The easiest way to get up and running is through nuget. In the Package Manager C
 Install-Package unfold
 ```
 
-Preferrably inside a web project, but this is not required. This create a `deployment` folder in your project containing:
+Preferrably inside a web project, but this is not required. This creates a `deployment` folder in your project containing:
 
 * a local copy of the unfold powershell library
 * an `unfold.ps1` launcher script that can be used to launch deployment commands
