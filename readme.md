@@ -5,46 +5,38 @@ For access to the remote machines Unfold depens on [Powershell Remoting](http://
 
 For structuring the different tasks that need to happen during a deploy we depend on the excellent [psake](https://github.com/psake/psake) library. Psake "avoids the angle-bracket tax associated with executable XML by leveraging the PowerShell syntax in your build scripts. " As a result it also makes a perfect fit for describing deployment steps.
 
-## Installation
-Installation is straight-forward. Simply `git clone` this repository into your modules path. 
-
-The following piece of code will do just that:
+## Getting started
+The easiest way to get up and running is through nuget. In the Package Manager Console simply type 
 
 ```posh
-   $target = $env:PSModulePath.Split(';')[0]
-   Set-Location $target
-   git clone https://github.com/thomasvm/unfold.git
-```        
-
-Once that's done, you can start using Unfold. 
-
-## Unfoldify-ing a project
-Just like Capistrano, configuring an Unfold deployment starts with Unfoldify-ing your project. Tod do so, simply open up a Powershell inside your project and issue the following commands
-
-```posh
-        Import-Module unfold
-        unfoldify
+Install-Package unfold
 ```
 
-This will create a `deployment` folder, for a full explanation you can skip to the deployment structure section. For getting up and running quickly, check QuickStart
+Preferrably inside a web project, but this is not required. This create a `deployment` folder in your project containing:
+
+* a local copy of the unfold powershell library
+* an `unfold.ps1` launcher script that can be used to launch deployment commands
+* the most important file: `deploy.ps1`, containing configuration settings and deployment tasks for your project
+
+Alternatively, you can also [install Unfold in your user profile](/thomasvm/unfold/wiki/Install-in-your-powershell-profile), and take a slightly different approach.
 
 ## Quickstart
-Now that you project is unfoldified, go through the following steps:
+Now that unfold is in your project:
 
-1. check the configuration variables inside the config folder, and adjust them for your project's needs
-2. Open a powershell command-line into the deployment folder and execute 
+1. checkout the `deploy.ps1` file, it contains both the configuration values and custom tasks for your project. This is what you customize.
+2. Open a powershell command-line into the deployment folder and execute (or change the directory of the Package Manager Console to the deployment folder)
 
+	```posh
         .\unfold.ps1 deploy -properties @{env="dev"}
-   If your default configuration is still set to dev, youc an skip the `-properties` part
+	```		
+
+   If your default configuration is still set to dev, you can skip the `-properties` part
 
 3. check the output and adjust the configuration as needed
 4. start writing custom extensions by adding psake tasks to the `deploy.ps1` file
 
 ## Deployment structure
         deployment
-        -> config
-            -> dev.ps1
-            -> shared.ps1
         -> deploy.ps1
         -> unfold.ps1
 
@@ -60,15 +52,9 @@ Let's see what each of them does:
 
 * *deploy.ps1*
 
-  this file's purpose is to the default tasks, defines any custom task, and/or hooking them onto other tasks to complement the deployment flow. 
-
-* *config* folder
-
-  the config folder contains one file per deployment target, plus one _shared_ configuration file. So it the generated folder, there is one deployemnt environment defined: dev. If you would like to add a staging or a production target, then it's just a matter of add a `staging.ps1` or a `production.ps1` file to the config folder. You can then deploy to one of those environments by calling Unfold in the following way:
-
-        .\unfold.ps1 deploy -properties @{env="staging"}
-
-  this will tell unfold to load the shared + the staging enviromment variables for deployment        
+  this file's has several purposes:
+  1. specifying configuration values, some shared, some environment specific
+  2. loading the default tasks, defining custom tasks, and/or hooking them onto other tasks to complement the deployment flow. 
 
 ## Configuration
 Setting the configuration settings for your deployment happens in the files in the config folder. As mentioned before, there is one `shared.ps1` file for _shared_ configuration settings, and then one file per environment you want to deploy to: `dev.ps1`, `staging.ps1`, `anynameyoudlike.ps1`. Switching environments happens by passing the `env` property to the `unfold.ps1` command.
@@ -90,15 +76,24 @@ The `shared.ps1` looks more or less like this:
         Set-Config default dev
 ```
 
-The default `dev.ps1` looks like this:
+For environment specific settings, you can use the `Set-Environment` function. This will instruct Unfold to only load those settings when you are deploying to the specified environment.
+
 
 ```posh
-        Set-Config basePath "<a folder somewhere>"
-        
-        # local machine
-        Set-Config machine "localhost"
+	Set-Environment dev {
+	    Set-Config basePath "c:\inetput\wwwroot\unfold\project" 
+	    Set-Config machine "localhost"
+	}
+
+	Set-Environment staging {
+	    Set-Config basePath "d:\deployments\project" 
+	    Set-Config machine "123.456.0.78"
+	}
 ```
-As you can see, the `dev.ps1` one contains settings that are environment specific, while the `shared.ps1` file contains settings that will be shared amongst different environments. You're free to alter these settings or to add custom configuration settings should you need them, e.g. the locations of your log files, or connection strings for running a database migration tool
+
+As you can see, there are two environments specified: dev and staging, with both a different machine and basepath to deploy to.  Once you're deploying to a specific environment these settings will be available on the `$config` object as `$config.basePath` and `$config.machine` when you're writing custom tasks. (See Usage for more info on how to specify the environment when deploying)
+
+You're free to alter these settings or to add custom configuration settings should you need them, e.g. the locations of your log files, or connection strings for running a database migration tool.
 
 ## Usage
 Executing Unfold happens through the `unfold.ps1` script. The following options are available
