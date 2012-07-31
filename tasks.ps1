@@ -297,7 +297,7 @@ task setupiis -description "Creates/updates the IIS website configuration" {
     }
 }
 
-task finalize -depends "Creates a link pointing to current release" {
+task finalize -description "Creates a link pointing to current release" {
     $currentPath = Join-Path $config.basePath "current" 
 
     Invoke-Script -arguments @{currentPath=$currentPath} {
