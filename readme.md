@@ -57,11 +57,9 @@ Let's see what each of them does:
   2. loading the default tasks, defining custom tasks, and/or hooking them onto other tasks to complement the deployment flow. 
 
 ## Configuration
-Setting the configuration settings for your deployment happens in the files in the config folder. As mentioned before, there is one `shared.ps1` file for _shared_ configuration settings, and then one file per environment you want to deploy to: `dev.ps1`, `staging.ps1`, `anynameyoudlike.ps1`. Switching environments happens by passing the `env` property to the `unfold.ps1` command.
+The `deploy.ps1` file starts with a set of `Set-Config` calls. These `Set-Config` calls add properties to a Powershell `$config` object that is accessible in all of the deployment tasks, and that is also available when executing calls on remote machines using `Invoke-Script`. 
 
-When you open one of the configuration files, you'll see that it is a concatenation of Set-Config calls. These `Set-Config` calls add properties to a Powershell `$config` object that is accessible in all of the deployment tasks, and that is also available when executing calls on remote machines. (More on that later)
-
-The `shared.ps1` looks more or less like this:
+The `deploy.ps1` looks more or less like this:
 
 ```posh
         # Set project name
@@ -94,6 +92,23 @@ For environment specific settings, you can use the `Set-Environment` function. T
 As you can see, there are two environments specified: dev and staging, with both a different machine and basepath to deploy to.  Once you're deploying to a specific environment these settings will be available on the `$config` object as `$config.basePath` and `$config.machine` when you're writing custom tasks. (See Usage for more info on how to specify the environment when deploying)
 
 You're free to alter these settings or to add custom configuration settings should you need them, e.g. the locations of your log files, or connection strings for running a database migration tool.
+
+## Default tasks
+Unfold comes with a set of default tasks (you can list them using the -docs command-line switch). These tasks take care of the typical steps of a deployment flow
+
+* setup: creates the base folder that will contain the different deployments of your application
+* updatecode: fetches the code from the code repository
+* build: builds the first web project found, or the first solution. You can also specify a custom solution (see config)
+* release: copy the build output into a special folder, this will contain all necessary files for your application to run (binaries, dlls, views, css, js,...)
+* setupapppool: this will create or update a dedicated application pool for your application
+* setupiis: point an IIS website to the release folder
+* finalize: make a link call `current` that points to the current release
+
+And then some special tasks:
+
+* listremoteversions: lists all remote versions, can be used by the rollback task
+* rollback: points the current website to one of the existing releases
+* purgeoldreleases: removes releases that are too old to be kept around
 
 ## Usage
 Executing Unfold happens through the `unfold.ps1` script. The following options are available
