@@ -159,7 +159,11 @@ task release -depends build -description "Puts the built code inside a release f
                     New-Item -type Directory $destination 
 
                     # copy all items
-                    Get-ChildItem $source -Recurse -Exclude @('*.cs', '*.csproj') | Copy-Item -Destination {Join-Path $destination $_.FullName.Substring($source.Length)}
+                    $sourceLength = (Resolve-Path $source).Path.Length
+                    Get-ChildItem $source -Recurse -Exclude @('*.cs', '*.csproj') | Copy-Item -Destination {
+                        $result = Join-Path $destination $_.FullName.Substring($sourceLength)
+                        return $result
+                    }
 
                     # remove empty folders
                     Get-ChildItem -Recurse | Foreach-Object {
@@ -174,6 +178,7 @@ task release -depends build -description "Puts the built code inside a release f
                         }
                         $subitems = $null
                     }
+
                     # remove obj
                     Remove-Item "$($config.releasepath)\web\obj" -Recurse
                     break
