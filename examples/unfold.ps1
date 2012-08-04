@@ -16,12 +16,7 @@ $scriptPath = $(Split-Path -parent $MyInvocation.MyCommand.path)
 remove-module unfold -ErrorAction SilentlyContinue
 
 # First try local unfold
-$import = join-path $scriptPath .\unfold\unfold.psm1
-
-# Then from profile
-If(-not (Test-Path $import)) {
-    $import = "unfold"
-}
+$import = join-path $scriptPath ..\unfold.psm1
 
 import-module $import -ArgumentList $properties
 
