@@ -27,7 +27,16 @@ Import-DefaultTasks
 # Set deploy as default task
 task Default -depends "deploy"
 
-task SetupRavenDb {
+task releasemigrations {
+   Invoke-Script {
+        Copy-Item -Recurse ".\code\RaccoonBlog.Migrations\bin\Debug" `
+                           "$($config.releasePath)\migrations"
+   }
+}
+
+Set-AfterTask release releasemigrations
+
+task setupravendb {
     Invoke-Script {
         If(Test-Path "$($config.basePath)\ravendb") {
             return
@@ -79,5 +88,5 @@ task uninstallraven {
     }
 }
 
-Set-BeforeTask setupapppool SetupRavenDb
+Set-BeforeTask setupapppool setupravendb
 
