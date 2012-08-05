@@ -13,6 +13,8 @@ Set-Config msbuild @('.\code\RaccoonBlog.Web\RaccoonBlog.Web.csproj', `
 # For custom apppool name
 Set-Config apppool "raccoonblog"
 
+Set-Config ravenport "8080"
+
 # Environments
 Set-Environment dev {
     Set-Config basePath "c:\inetpub\wwwroot\raccoon"
@@ -28,7 +30,7 @@ Import-DefaultTasks
 task Default -depends "deploy"
 
 task releasemigrations {
-   Invoke-Script {
+    Invoke-Script {
         Copy-Item -Recurse ".\code\RaccoonBlog.Migrations\bin\Debug" `
                            "$($config.releasePath)\migrations"
    }
@@ -61,14 +63,45 @@ task setupravendb {
         Download "http://builds.hibernatingrhinos.com/Download/9537" "$basePath\ravendb\ravendb.zip"
         Unzip "$basePath\ravendb\ravendb.zip" "$basePath\ravendb"
 
-        # TODO: set port
+    }
 
+    # Change port to 8080
+    Invoke-Script -arguments {transform=$transform} {
+        $transform = @"
+<?xml version="1.0"?>
+<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+  <appSettings>
+    <add key="Raven/Port" 
+      value="$($config.ravenport)" 
+      xdt:Transform="SetAttributes" xdt:Locator="Match(key)"/>
+  </appSettings>
+</configuration>
+"@
+        Set-Content -Path ".\ravendb\Server\setport.config" -Value $transform
+    }
+
+    Convert-Configuration ".\ravendb\Server\Raven.Server.exe.config" `
+                          ".\ravendb\Server\setport.config" `
+                          ".\ravendb\Server\Raven.Server.exe.config"
+
+    # Install
+    Invoke-Script {
         # Install
         cd .\ravendb\Server
         Exec {
             .\Raven.Server.exe /install
         }
         cd ..
+    }
+}
+
+Set-BeforeTask setupapppool setupravendb
+
+task restartraven {
+    Invoke-Script {
+        Exec {
+            .\ravendb\Server\Raven.Server.exe /restart
+        }
     }
 }
 
@@ -87,6 +120,4 @@ task uninstallraven {
         cd ..
     }
 }
-
-Set-BeforeTask setupapppool setupravendb
 
