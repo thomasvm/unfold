@@ -66,7 +66,7 @@ task setupravendb {
     }
 
     # Change port to 8080
-    Invoke-Script -arguments {transform=$transform} {
+    Invoke-Script {
         $transform = @"
 <?xml version="1.0"?>
 <configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
