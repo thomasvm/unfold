@@ -9,6 +9,7 @@ function Import-LocalModule($path)
 remove-module [p]sake 
 Import-Localmodule .\lib\psake.psm1
 Import-LocalModule .\lib\credentials.psm1
+Import-Module "$scriptpath\lib\scriptfunctions.psm1"
 
 $properties = @{}
 
@@ -84,6 +85,7 @@ $script:context = @{}
 $currentContext = $script:context
 $currentContext.sessions = @{}
 $currentContext.config = $config
+$currentContext.script = $null
 
 # Remote script invocation
 function Invoke-Script 
@@ -104,12 +106,12 @@ function Invoke-Script
 
     # Run locally if localhost
     if($machine -eq "localhost") {
-        if(-not (Get-Module scriptFunctions)) {
-            write-host "loading module"
-            Import-Module "$scriptpath\lib\scriptFunctions.psm1"
-        }
-
         $folder = pwd
+
+        write-host "$($currentContext.script)"
+        If($currentContext.script -and -not(Get-Module "customscript")) {
+            $m = New-Module -name "customscript" -scriptblock $currentContext.script
+        }
       
         # change to base path 
         if($config.basePath -and (Test-Path $config.basePath)) {
@@ -136,14 +138,20 @@ function Invoke-Script
 
         $scriptFunctions = Get-Content "$scriptPath\lib\scriptFunctions.psm1"
 
-        invoke-command -Session $newSession -argumentlist @($frameworkDirs,$scriptFunctions) -ScriptBlock {
-            param($dirs,$scriptFunctions)
+        invoke-command -Session $newSession -argumentlist @($frameworkDirs,$scriptFunctions,$currentContext.script) -ScriptBlock {
+            param($dirs,$scriptFunctions,$customFunctions)
             # enrich path
             $env:path = ($dirs -join ";") + ";$env:path"
 
-            # load functions
+            # load our own functions from .\lib\scriptfunctions.psm1
             $scr = $ExecutionContext.InvokeCommand.NewScriptBlock($scriptFunctions)
             $m = New-Module -Name ScriptFunctions -ScriptBlock $scr
+
+            # load functions set through Set-ScriptModule
+            If($customFunctions) {
+                $scr = $ExecutionContext.InvokeCommand.NewScriptBlock($customFunctions)
+                $customModule = New-Module -Name ScriptFunctions -ScriptBlock $scr
+            }
 
             # Intall exec function
             function Exec
@@ -195,6 +203,27 @@ function Remove-Sessions
     }
     $currentContext.sessions.Clear()
 }
+
+function Set-ScriptModule
+{
+    param(
+        [Parameter(Position=0,Mandatory=1)]$script
+    )
+
+    $scr = $null
+
+    If($script.GetType().Name -eq "ScriptBlock") {
+        $scr = $script
+    } Else {
+        $content = $script
+        If(Test-Path $script) {
+            $content = Get-Content $script
+        } 
+        $scr = $ExecutionContext.InvokeCommand.NewScriptBlock($content)
+    }
+    $currentContext.script = $scr
+}
+
 
 # Import default tasks
 function Import-DefaultTasks
@@ -371,7 +400,7 @@ function Install-Unfold {
     Copy-Item -Recurse $templatePath -Destination $installPath
 }
 
-export-modulemember -function Set-Config, Set-Environment, `
+export-modulemember -function Set-Config, Set-Environment, Set-ScriptModule, `
                               Initialize-Configuration, Import-DefaultTasks, Remove-Sessions, `
                               Invoke-Script, Set-BeforeTask, Set-AfterTask, Convert-Configuration, `
                               Get-CurrentFolder, Get-DeployedFolders, Install-Unfold -variable config
