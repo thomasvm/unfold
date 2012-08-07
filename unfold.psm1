@@ -104,6 +104,11 @@ function Invoke-Script
 
     # Run locally if localhost
     if($machine -eq "localhost") {
+        if(-not (Get-Module scriptFunctions)) {
+            write-host "loading module"
+            Import-Module "$scriptpath\lib\scriptFunctions.psm1"
+        }
+
         $folder = pwd
       
         # change to base path 
@@ -112,7 +117,9 @@ function Invoke-Script
         } 
 
         # Run the script
-        $ret = &$scriptblock $arguments
+        # Simple dot sourcing will not work. We have to force the script block into our
+        # module's scope in order to initialize variables properly.
+        $ret = . $MyInvocation.MyCommand.Module $scriptblock $arguments
 
         # Back to original folder
         cd $folder
@@ -127,10 +134,16 @@ function Invoke-Script
 
         $frameworkDirs = Get-FrameworkDirs
 
-        invoke-command -Session $newSession -argumentlist @($frameworkDirs) -ScriptBlock {
-            param($dirs)
+        $scriptFunctions = Get-Content "$scriptPath\lib\scriptFunctions.psm1"
+
+        invoke-command -Session $newSession -argumentlist @($frameworkDirs,$scriptFunctions) -ScriptBlock {
+            param($dirs,$scriptFunctions)
             # enrich path
             $env:path = ($dirs -join ";") + ";$env:path"
+
+            # load functions
+            $scr = $ExecutionContext.InvokeCommand.NewScriptBlock($scriptFunctions)
+            $m = New-Module -Name ScriptFunctions -ScriptBlock $scr
 
             # Intall exec function
             function Exec
