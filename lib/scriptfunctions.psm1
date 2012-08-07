@@ -1,16 +1,16 @@
 function Start-Download {
     param(
         [Parameter(Position=0,Mandatory=1)]$url,
-        [Parameter(Position=1,Mandatory=1)]$destination,
+        [Parameter(Position=1,Mandatory=1)]$destination
     )
     $webclient = New-Object System.Net.WebClient
     $webclient.DownloadFile($url, $destination)
 }
 
-function Extract-File {
+function Expand-File {
     param(
         [Parameter(Position=0,Mandatory=1)]$file,
-        [Parameter(Position=1,Mandatory=1)]$destination,
+        [Parameter(Position=1,Mandatory=1)]$destination
     )
     $shell_app = new-object -com shell.application
     $zip_file = $shell_app.namespace($file)
