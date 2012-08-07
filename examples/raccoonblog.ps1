@@ -44,25 +44,12 @@ task setupravendb {
             return
         }
 
-        function Download($url, $destination) {
-            $webclient = New-Object System.Net.WebClient
-            $webclient.DownloadFile($url, $destination)
-        }    
-
-        function Unzip($filename, $destination) {
-            $shell_app = new-object -com shell.application
-            $zip_file = $shell_app.namespace($filename)
-            $destinationPath = $shell_app.namespace($destination)
-            $destinationPath.Copyhere($zip_file.items())
-        }
-
         $basePath = $config.basePath
 
-        # Download an unzip
+        # Download an unzip, these functions come from scriptfunctions.psm1
         New-Item -type Directory -Name "ravendb"
-        Download "http://builds.hibernatingrhinos.com/Download/9537" "$basePath\ravendb\ravendb.zip"
-        Unzip "$basePath\ravendb\ravendb.zip" "$basePath\ravendb"
-
+        Start-Download "http://builds.hibernatingrhinos.com/Download/9537" "$basePath\ravendb\ravendb.zip"
+        Expand-File "$basePath\ravendb\ravendb.zip" "$basePath\ravendb"
     }
 
     # Change port to 8080
