@@ -71,9 +71,6 @@ function Initialize-Configuration {
         $val = $config[$env][$key]
         $config[$key] = $val
     }
-
-    $strat = Import-Module "$scriptPath\strategy\remotecheckout.psm1" -AsCustomObject
-    Set-Variable -Name strategy -Value $strat -Scope 2
 }
 
 function ValueOrDefault($value, $default) {
