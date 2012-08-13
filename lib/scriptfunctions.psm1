@@ -17,3 +17,57 @@ function Expand-File {
     $destinationPath = $shell_app.namespace($destination)
     $destinationPath.Copyhere($zip_file.items())
 }
+
+# Transform config
+function Convert-Configuration {
+    param(
+        [Parameter(Position=0,Mandatory=1)][string]$source,
+        [Parameter(Position=1,Mandatory=1)][string]$transformation,
+        [Parameter(Position=2,Mandatory=0)][string]$destination
+    )
+
+    If(-not $destination) {
+        $destination = $source
+    }
+
+    $vars = @{
+        source = $source
+        transformation = $transformation
+        destination = $destination
+    }
+
+    $block = {
+        param([psobject]$arguments)
+
+        $temp = $arguments.source + ".temp"
+
+        Move-Item $arguments.source $temp
+
+        $msbuild = @"
+<Project ToolsVersion="4.0" 
+         DefaultTargets="Transform" 
+         xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <UsingTask TaskName="TransformXml"
+             AssemblyFile="`$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\Web\Microsoft.Web.Publishing.Tasks.dll"/>
+
+    <Target Name="Transform">
+        <TransformXml Source="$temp"
+                      Transform="$($arguments.transformation)"
+                      Destination="$($arguments.destination)"/>
+    </Target>
+</Project>
+"@
+
+        Set-Content "transform.msbuild" $msbuild
+
+        Exec -errormessage "transforming failed" {
+            msbuild "transform.msbuild"
+        }
+
+        Remove-item "transform.msbuild"
+        Remove-item $temp
+    }
+
+    & $block $vars
+}
+
