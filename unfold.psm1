@@ -108,7 +108,6 @@ function Invoke-Script
     if($machine -eq "localhost") {
         $folder = pwd
 
-        write-host "$($currentContext.script)"
         If($currentContext.script -and -not(Get-Module "customscript")) {
             $m = New-Module -name "customscript" -scriptblock $currentContext.script
         }
