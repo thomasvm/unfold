@@ -19,6 +19,10 @@ Set-Environment staging {
     Set-Config connectionString "your staging connection string"
 }
 
+Set-Config bindings @(
+                     @{protocol="http";bindingInformation="*:8001:"}
+                       )
+
 # Tasks
 Import-DefaultTasks
 
