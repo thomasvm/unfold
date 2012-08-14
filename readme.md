@@ -33,7 +33,8 @@ Now that unfold is in your project:
    If your default configuration is still set to dev, you can skip the `-properties` part
 
 3. check the output and adjust the configuration as needed
-4. start writing custom extensions by adding psake tasks to the `deploy.ps1` file
+4. checkout the [examples](/thomasvm/unfold/tree/master/examples)
+5. start writing custom extensions by adding psake tasks to the `deploy.ps1` file
 
 ## Deployment structure
         deployment
