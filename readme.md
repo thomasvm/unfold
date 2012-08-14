@@ -23,7 +23,7 @@ Alternatively, you can also [install Unfold in your user profile](/thomasvm/unfo
 ## Quickstart
 Now that unfold is in your project:
 
-1. checkout the `deploy.ps1` file, it contains both the configuration values and custom tasks for your project. This is what you customize.
+1. checkout the `deploy.ps1` file, it contains both the configuration values and custom tasks for your project. This is what you customize. Note that Visual Studio by default does not have support for PowerShell syntax highlighting, you might want to open the file in another editor or consider installing [PowerGUI extensions](http://visualstudiogallery.msdn.microsoft.com/01516103-d487-4a7e-bb40-c15ec709afa3/) or [TextHighlighterExtensionSetup](http://visualstudiogallery.msdn.microsoft.com/6706b602-6f10-4fd1-8e14-75840f855569/)
 2. Open a powershell command-line into the deployment folder and execute (or change the directory of the Package Manager Console to the deployment folder)
 
 	```posh
