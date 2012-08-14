@@ -9,7 +9,6 @@ function Import-LocalModule($path)
 remove-module [p]sake 
 Import-Localmodule .\lib\psake.psm1
 Import-LocalModule .\lib\credentials.psm1
-Import-Module "$scriptpath\lib\scriptfunctions.psm1"
 
 $properties = @{}
 
@@ -87,6 +86,8 @@ function Initialize-Configuration {
     Write-Host "Using scm $name"
     Add-ScriptModule $scm $name
     Set-Variable -name scmname -Value $name -Scope 1 
+
+    Add-ScriptModule "$scriptPath\lib\scriptfunctions.psm1" "scriptfunctions"
 }
 
 function ValueOrDefault($value, $default) {
@@ -172,16 +173,10 @@ function Invoke-Script
 
         $frameworkDirs = Get-FrameworkDirs
 
-        $scriptFunctions = Get-FileContent "$scriptPath\lib\scriptFunctions.psm1"
-
-        invoke-command -Session $newSession -argumentlist @($frameworkDirs,$scriptFunctions) -ScriptBlock {
-            param($dirs,$scriptFunctions)
+        invoke-command -Session $newSession -argumentlist @($frameworkDirs) -ScriptBlock {
+            param($dirs)
             # enrich path
             $env:path = ($dirs -join ";") + ";$env:path"
-
-            # load our own functions from .\lib\scriptfunctions.psm1
-            $scr = $ExecutionContext.InvokeCommand.NewScriptBlock($scriptFunctions)
-            $m = New-Module -Name ScriptFunctions -ScriptBlock $scr
 
             # Intall exec function
             function Exec
