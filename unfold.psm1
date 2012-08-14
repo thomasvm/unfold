@@ -133,11 +133,14 @@ function Invoke-Script
         If(-not $currentContext.scriptLoaded) {
              Foreach($key in $currentContext.scripts.keys) {
                 $script = $currentContext.scripts[$key]
-                $m = New-Module -name $key -scriptblock $script
 
+                # If scm -> assign
                 If($key -eq $scmname) {
-                    $scmCommands = Get-ScmCommands
-                    Set-Variable -name scm -Value $scmCommands -Scope 2
+                    $m = New-Module -name $key -scriptblock $script -AsCustomObject
+                    Set-Variable -name scm -Value $m -Scope 1
+                } Else {
+                    # simply import
+                    $m = New-Module -name $key -scriptblock $script
                 }
              }
              # Reset, all imports are done
@@ -197,16 +200,15 @@ function Invoke-Script
 
         Foreach($name in $currentContext.scripts.keys) {
             $script = $currentContext.scripts[$name]
-            invoke-command -Session $newSession -argumentlist @($name,$script) -ScriptBlock {
-                param($name,$s)
+            invoke-command -Session $newSession -argumentlist @($name,$script,$scmname) -ScriptBlock {
+                param($name,$s,$scmname)
                 $scr = $ExecutionContext.InvokeCommand.NewScriptBlock($s)
-                $m = New-Module -Name $name -ScriptBlock $scr
-            }
 
-            If($name -eq $scmname) {
-                invoke-command -Session $newSession -ScriptBlock {
-                    $scmCommands = Get-ScmCommands
-                    Set-Variable -name scm -Value $scmCommands
+                # Import scm as custom object
+                If($name -eq $scmname) {
+                    $scm = New-Module -Name $name -ScriptBlock $scr -AsCustomObject
+                } Else {
+                    $m = New-Module -Name $name -ScriptBlock $scr
                 }
             }
         }

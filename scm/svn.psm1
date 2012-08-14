@@ -15,26 +15,29 @@ function Run-Svn {
     &$svn $args
 }
 
-function Get-ScmCommands
+function NewCheckout
 {
-    return @{
-        initialcheckout = {
-            Run-Svn co $config.repository code
-        }
-        updatecode = {
-            cd code
-            Run-Svn revert .
-            Run-Svn update
-            cd ..
-        }
-        getcommit = {
-            $revisionInfo = Run-Svn info .\code | Where-Object { $_.StartsWith("Revision") }
-            return $revisionInfo.Split(':')[1].Trim()
-        }
-        help = {
-            Run-Svn help commit
-        }
-    }
+    Run-Svn co $config.repository code
 }
 
-Export-ModuleMember -function Get-ScmCommands
+function UpdateCode
+{
+    cd code
+    Run-Svn revert .
+    Run-Svn update
+    cd ..
+}
+
+function GetCommit
+{
+    $path = ".\code"
+
+    If(-not(Test-Path $path)) {
+        $path = "."
+    }
+
+    $revisionInfo = Run-Svn info $path | Where-Object { $_.StartsWith("Revision") }
+    return $revisionInfo.Split(':')[1].Trim()
+}
+
+Export-ModuleMember -function NewCheckout, UpdateCode, GetCommit

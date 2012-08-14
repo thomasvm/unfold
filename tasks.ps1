@@ -20,9 +20,9 @@ task setup -description "creates the folder that will contain the releases" {
 task updatecode -depends setup -description "updates the code from scm" {
     Invoke-Script {
         If(-not (Test-Path code)) {
-            .$scm.initialcheckout
+            $scm.NewCheckout()
         } Else {
-            .$scm.updatecode
+            $scm.UpdateCode()
         }
     }
     return
@@ -79,7 +79,7 @@ task build -depends updatecode -description "Builds the code using msbuild" {
     }
 
     $config.msbuild = $buildFiles
-    Invoke-Script {
+    $succes = Invoke-Script {
         $target = $config.buildconfiguration
         If($target -eq $null) {
             $target = "Debug"
@@ -87,9 +87,10 @@ task build -depends updatecode -description "Builds the code using msbuild" {
 
         Foreach($file in $config.msbuild) {
             Write-Host "Building file $file" -Fore Green
-            # Wrap in exec to stop on failure
-            Exec {
-                msbuild /p:Configuration=$target /target:Rebuild $file
+            msbuild /p:Configuration=$target /target:Rebuild $file
+
+            If($lastExistCode -ne 0) {
+                throw "Build failed"
             }
         }
     }
@@ -105,10 +106,8 @@ task release -depends build -description "Puts the built code inside a release f
 
     $revision = $null
 
-    If($scm.getcommit) {
-        $revision = Invoke-Script {
-            return .$scm.getcommit
-        }
+    $revision = Invoke-Script {
+        return $scm.GetCommit()
     }
 
     If($revision) {
