@@ -37,6 +37,8 @@ Now that unfold is in your project:
 5. start writing custom extensions by adding psake tasks to the `deploy.ps1` file
 
 ## Deployment structure
+Now some more detail. All unfold needs are two files
+
         deployment
         -> deploy.ps1
         -> unfold.ps1
@@ -164,7 +166,7 @@ Executing Unfold happens through the `unfold.ps1` script. The following options 
 
 ### TODO
 
-* split out scm support creating same functions but with other implementations for git, hg,...
+* ~~split out scm support creating same functions but with other implementations for git, svn, ~~hg,...
 * implement different strategies for getting the code _on the other side_
 * Create-AssemblyInfo function for using shared
 * ~~function to _unfoldify_ a project~~  
