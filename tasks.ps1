@@ -18,29 +18,14 @@ task setup -description "creates the folder that will contain the releases" {
 }
 
 task updatecode -depends setup -description "updates the code from scm" {
-    If($config.scm -eq "git") {
-        Invoke-Script {
-            $branch = $config.branch
-
-            If($branch -eq $null) {
-                $branch = "master"
-            }
-
-            If(-not(Test-Path "code")) {
-                git clone $config.repository code
-                git checkout $branch
-            } Else {
-                cd code
-                git checkout $branch
-                git pull origin
-                git checkout $branch
-                cd ..
-            }
+    Invoke-Script {
+        If(-not (Test-Path code)) {
+            .$scm.initialcheckout
+        } Else {
+            .$scm.updatecode
         }
-        return
     }
-
-    throw "Unsupported scm $($config.scm)"
+    return
 }
 
 task build -depends updatecode -description "Builds the code using msbuild" {
