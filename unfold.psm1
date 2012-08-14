@@ -85,7 +85,8 @@ $script:context = @{}
 $currentContext = $script:context
 $currentContext.sessions = @{}
 $currentContext.config = $config
-$currentContext.script = $null
+$currentContext.scripts = @()
+$currentContext.scriptLoaded = $false
 
 # Remote script invocation
 function Invoke-Script 
@@ -108,10 +109,16 @@ function Invoke-Script
     if($machine -eq "localhost") {
         $folder = pwd
 
-        If($currentContext.script -and -not(Get-Module "customscript")) {
-            $m = New-Module -name "customscript" -scriptblock $currentContext.script
+        If(-not $currentContext.scriptLoaded) {
+             $counter = 0
+             Foreach($script in $currentContext.scripts) {
+                 $counter++
+                 $m = New-Module -name "customscript_$counter" -scriptblock $script
+             }
+             # Reset, all imports are done
+             $currentContext.scriptsLoaded = $true
         }
-      
+
         # change to base path 
         if($config.basePath -and (Test-Path $config.basePath)) {
             cd $config.basePath
@@ -139,20 +146,14 @@ function Invoke-Script
 
         $scriptFunctions = Get-Content "$scriptPath\lib\scriptFunctions.psm1"
 
-        invoke-command -Session $newSession -argumentlist @($frameworkDirs,$scriptFunctions,$currentContext.script) -ScriptBlock {
-            param($dirs,$scriptFunctions,$customFunctions)
+        invoke-command -Session $newSession -argumentlist @($frameworkDirs,$scriptFunctions) -ScriptBlock {
+            param($dirs,$scriptFunctions)
             # enrich path
             $env:path = ($dirs -join ";") + ";$env:path"
 
             # load our own functions from .\lib\scriptfunctions.psm1
             $scr = $ExecutionContext.InvokeCommand.NewScriptBlock($scriptFunctions)
             $m = New-Module -Name ScriptFunctions -ScriptBlock $scr
-
-            # load functions set through Set-ScriptModule
-            If($customFunctions) {
-                $scr = $ExecutionContext.InvokeCommand.NewScriptBlock($customFunctions)
-                $customModule = New-Module -Name ScriptFunctions -ScriptBlock $scr
-            }
 
             # Intall exec function
             function Exec
@@ -166,6 +167,16 @@ function Invoke-Script
                 if ($lastexitcode -ne 0) {
                     throw ("Exec: " + $errorMessage)
                 }
+            }
+        }
+
+        $counter = 0
+        Foreach($script in $currentContext.scripts) {
+            $counter++
+            invoke-command -Session $newSession -argumentlist @($script,$counter) -ScriptBlock {
+                param($s,$counter)
+                $scr = $ExecutionContext.InvokeCommand.NewScriptBlock($s)
+                $m = New-Module -Name "scriptfunctions_$counter" -ScriptBlock $scr
             }
         }
 
@@ -205,7 +216,7 @@ function Remove-Sessions
     $currentContext.sessions.Clear()
 }
 
-function Set-ScriptModule
+function Add-ScriptModule
 {
     param(
         [Parameter(Position=0,Mandatory=1)]$script
@@ -222,7 +233,7 @@ function Set-ScriptModule
         } 
         $scr = $ExecutionContext.InvokeCommand.NewScriptBlock($content)
     }
-    $currentContext.script = $scr
+    $currentContext.scripts = $currentContext.scripts + $scr
 }
 
 
@@ -350,7 +361,7 @@ function Install-Unfold {
     Copy-Item -Recurse $templatePath -Destination $installPath
 }
 
-export-modulemember -function Set-Config, Set-Environment, Set-ScriptModule, `
+export-modulemember -function Set-Config, Set-Environment, Add-ScriptModule, `
                               Initialize-Configuration, Import-DefaultTasks, Remove-Sessions, `
                               Invoke-Script, Set-BeforeTask, Set-AfterTask, Convert-Configuration, `
                               Get-CurrentFolder, Get-DeployedFolders, Install-Unfold -variable config
