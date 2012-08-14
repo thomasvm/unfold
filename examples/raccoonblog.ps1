@@ -65,11 +65,10 @@ task setupravendb {
 </configuration>
 "@
         Set-Content -Path ".\ravendb\Server\setport.config" -Value $transform
-    }
 
-    Convert-Configuration ".\ravendb\Server\Raven.Server.exe.config" `
-                          ".\ravendb\Server\setport.config" `
-                          ".\ravendb\Server\Raven.Server.exe.config"
+        Convert-Configuration ".\ravendb\Server\Raven.Server.exe.config" `
+                              ".\ravendb\Server\setport.config" 
+    }
 
     # Install
     Invoke-Script {
