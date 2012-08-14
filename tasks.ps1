@@ -273,7 +273,7 @@ task setupiis -description "Creates/updates the IIS website configuration" {
         Write-Warning  "                          )"
         Write-Warning  "Now defaulting to port 8967"
         $bindings = @(
-                        @{protocol="http";bindingInformation="*:8967:*"}
+                        @{protocol="http";bindingInformation="*:8967:"}
                      )
     }
 
