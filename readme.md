@@ -166,7 +166,7 @@ Executing Unfold happens through the `unfold.ps1` script. The following options 
 
 ### TODO
 
-* ~~split out scm support creating same functions but with other implementations for git, svn, ~~hg,...
+* ~~split out scm support creating same functions but with other implementations for git, svn,~~ hg,...
 * implement different strategies for getting the code _on the other side_
 * Create-AssemblyInfo function for using shared
 * ~~function to _unfoldify_ a project~~  
