@@ -22,6 +22,7 @@ $config = @{}
 $config.wapguid = "349c5851-65df-11da-9384-00065b846f21"
 
 $configEnvironments = new-object system.collections.stack 
+$scmname = $null
 
 function Set-Config 
 {
@@ -71,6 +72,21 @@ function Initialize-Configuration {
         $val = $config[$env][$key]
         $config[$key] = $val
     }
+
+    $scm = ValueOrDefault $config.scm "git"
+    $name = $scm
+
+    # Not local to deploy.ps1 path, check our own
+    If(-not (Test-Path $scm)) {
+        $unfoldPath = "$scriptPath\scm\$scm.psm1"
+        If(Test-Path $unfoldPath) {
+            $scm = $unfoldPath
+        }
+    }
+
+    Write-Host "Using scm $name"
+    Add-ScriptModule $scm $name
+    Set-Variable -name scmname -Value $name -Scope 1 
 }
 
 function ValueOrDefault($value, $default) {
@@ -80,12 +96,17 @@ function ValueOrDefault($value, $default) {
     return $default
 }
 
+function Get-FileContent($path) {
+    $content = Get-Content -path $path
+    return [string]::join([environment]::newline, $content)
+}
+
 # setup context
 $script:context = @{}
 $currentContext = $script:context
 $currentContext.sessions = @{}
 $currentContext.config = $config
-$currentContext.scripts = @()
+$currentContext.scripts = @{}
 $currentContext.scriptLoaded = $false
 
 # Remote script invocation
@@ -110,10 +131,14 @@ function Invoke-Script
         $folder = pwd
 
         If(-not $currentContext.scriptLoaded) {
-             $counter = 0
-             Foreach($script in $currentContext.scripts) {
-                 $counter++
-                 $m = New-Module -name "customscript_$counter" -scriptblock $script
+             Foreach($key in $currentContext.scripts.keys) {
+                $script = $currentContext.scripts[$key]
+                $m = New-Module -name $key -scriptblock $script
+
+                If($key -eq $scmname) {
+                    $scmCommands = Get-ScmCommands
+                    Set-Variable -name scm -Value $scmCommands -Scope 2
+                }
              }
              # Reset, all imports are done
              $currentContext.scriptsLoaded = $true
@@ -144,7 +169,7 @@ function Invoke-Script
 
         $frameworkDirs = Get-FrameworkDirs
 
-        $scriptFunctions = Get-Content "$scriptPath\lib\scriptFunctions.psm1"
+        $scriptFunctions = Get-FileContent "$scriptPath\lib\scriptFunctions.psm1"
 
         invoke-command -Session $newSession -argumentlist @($frameworkDirs,$scriptFunctions) -ScriptBlock {
             param($dirs,$scriptFunctions)
@@ -170,13 +195,19 @@ function Invoke-Script
             }
         }
 
-        $counter = 0
-        Foreach($script in $currentContext.scripts) {
-            $counter++
-            invoke-command -Session $newSession -argumentlist @($script,$counter) -ScriptBlock {
-                param($s,$counter)
+        Foreach($name in $currentContext.scripts.keys) {
+            $script = $currentContext.scripts[$name]
+            invoke-command -Session $newSession -argumentlist @($name,$script) -ScriptBlock {
+                param($name,$s)
                 $scr = $ExecutionContext.InvokeCommand.NewScriptBlock($s)
-                $m = New-Module -Name "scriptfunctions_$counter" -ScriptBlock $scr
+                $m = New-Module -Name $name -ScriptBlock $scr
+            }
+
+            If($name -eq $scmname) {
+                invoke-command -Session $newSession -ScriptBlock {
+                    $scmCommands = Get-ScmCommands
+                    Set-Variable -name scm -Value $scmCommands
+                }
             }
         }
 
@@ -219,7 +250,8 @@ function Remove-Sessions
 function Add-ScriptModule
 {
     param(
-        [Parameter(Position=0,Mandatory=1)]$script
+        [Parameter(Position=0,Mandatory=1)]$script,
+        [Parameter(Position=1,Mandatory=0)]$name
     )
 
     $scr = $null
@@ -229,11 +261,16 @@ function Add-ScriptModule
     } Else {
         $content = $script
         If(Test-Path $script) {
-            $content = Get-Content $script
+            $content = Get-FileContent $script
         } 
         $scr = $ExecutionContext.InvokeCommand.NewScriptBlock($content)
     }
-    $currentContext.scripts = $currentContext.scripts + $scr
+
+    If(-not $name) {
+        $name = "scriptfunctions_$($currentContext.scripts.Count)"
+    }
+
+    $currentContext.scripts[$name] = $scr
 }
 
 
