@@ -105,12 +105,9 @@ task release -depends build -description "Puts the built code inside a release f
 
     $revision = $null
 
-    If($config.scm -eq "git") {
+    If($scm.getcommit) {
         $revision = Invoke-Script {
-            cd code
-            $gitLog = git log --oneline -1
-            cd ..
-            return $gitLog.Split(' ')[0]
+            return .$scm.getcommit
         }
     }
 

@@ -25,6 +25,13 @@ function Get-ScmCommands
         cd ..
     }
 
+    $commands.getcommit = {
+            cd code
+            $gitLog = git log --oneline -1
+            cd ..
+            return $gitLog.Split(' ')[0]
+    }
+
     return $commands
 }
 
