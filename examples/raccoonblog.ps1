@@ -1,3 +1,9 @@
+## A deployment example for RaccoonBlog, the blog engine that's powering
+## blogs like Ayende's
+## This deployment recipe not only builds and installs RaccoonBlog
+## it also takes care of installing RavenDb as a service, and has extra
+## tasks for uninstalling and restarting RavenDb
+
 # Configuration
 Set-Config project "raccoonblog"
 
