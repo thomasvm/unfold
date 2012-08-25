@@ -1,3 +1,9 @@
+## Deployment recipe for Jabbr, the SignalR based 
+## web chat application. 
+## Becausee Jabbr has such a good build script, we can
+## override the default build step and simply call the
+## build script that's provided by Jabbr itself.
+
 # Configuration
 Set-Config project "jabbr"
 
@@ -49,7 +55,6 @@ task customrelease {
         .$scm.getcommit
     }
     $config.releasepath = "$now`_$revision`_$($config.project)"
-    write-host $config.releasepath
 
     # simply copy built site to web
     Invoke-Script {
