@@ -337,6 +337,12 @@ task rollback -description "Rolls back to a previous version" {
         Write-Warning "Target version is same as current $current, skipping..." 
         return
     }
+
+    $config.isrollback = $true
+    $config.rollback = @{
+        from = $current
+        to = $releasePath
+    }
     Write-Host "Rolling back to $releasePath" -Fore Green
 
     Invoke-Task setupapppool
