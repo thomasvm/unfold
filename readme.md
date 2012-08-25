@@ -1,7 +1,7 @@
 # Unfold
 Unfold is a **Capistrano for .net** and/or Windows machines. It gives you the ability to easily create and customize your deployment scenario's without having to resort to complex tools that are hard to automize or difficult to setup. Unfold is _only_ powershell, so there's very little magic going on under the hood. 
 
-For access to the remote machines Unfold depens on [Powershell Remoting](http://msdn.microsoft.com/en-us/library/windows/desktop/ee706585.aspx), with access happening over https. Powershell Remoting allows us to obtain a session to a remote machine on which we can then invoke commands or scripblock, providing an viable alternative to SSH on Windows machines. Check the wiki for [instructions on how to setup Powershell Remoting over https](/thomasvm/unfold/wiki/Setting-up-Powershell-Remoting).
+For access to the remote machines Unfold depends on [Powershell Remoting](http://msdn.microsoft.com/en-us/library/windows/desktop/ee706585.aspx), with access happening over https. Powershell Remoting allows us to obtain a session to a remote machine on which we can then invoke commands or scripblock, providing an viable alternative to SSH on Windows machines. Check the wiki for [instructions on how to setup Powershell Remoting over https](/thomasvm/unfold/wiki/Setting-up-Powershell-Remoting).
 
 For structuring the different tasks that need to happen during a deploy we depend on the excellent [psake](https://github.com/psake/psake) library. Psake "avoids the angle-bracket tax associated with executable XML by leveraging the PowerShell syntax in your build scripts. " As a result it also makes a perfect fit for describing deployment steps.
 
@@ -166,11 +166,6 @@ Executing Unfold happens through the `unfold.ps1` script. The following options 
 
 ### TODO
 
-* ~~split out scm support creating same functions but with other implementations for git, svn,~~ hg,...
-* implement different strategies for getting the code _on the other side_
-* Create-AssemblyInfo function for using shared
-* ~~function to _unfoldify_ a project~~  
-* ~~setupiis task~~
-* ~~listversions task~~
-* ~~rollback task~~
-* ~~cleanup task (keep x versions)~~
+* implement different strategies for getting the code _on the other side_: ftp, copy over powershell session, BITS
+* hg support, and other scms
+* Create-AssemblyInfo function for generating a shared assembmy info. Based on [this](https://github.com/ayende/rhino-mocks/blob/master/psake_ext.ps1)
