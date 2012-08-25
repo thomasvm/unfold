@@ -20,7 +20,8 @@ function Get-ScmCommands
         }
 
         cd code
-        git pull origin $branch
+        git fetch
+        git merge "origin/$branch"
         git checkout $branch
         cd ..
     }
