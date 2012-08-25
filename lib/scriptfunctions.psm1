@@ -60,12 +60,16 @@ function Convert-Configuration {
 
         Set-Content "transform.msbuild" $msbuild
 
-        Exec -errormessage "transforming failed" {
-            msbuild "transform.msbuild"
+        msbuild "transform.msbuild"
+
+        # Success? remove temp, otherwise move back
+        If(Test-Path $arguments.destination) {
+            Remove-item $temp
+        } Else {
+            Move-Item $temp $arguments.source
         }
 
         Remove-item "transform.msbuild"
-        Remove-item $temp
     }
 
     & $block $vars
