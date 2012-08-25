@@ -45,7 +45,11 @@ task custombuild {
 # Custom release, build prepares this
 task customrelease {
     $now = (Get-Date).ToString("yyyyMMdd_HHmm")
-    $config.releasepath = "$now`_$revision$($config.project)"
+    $revision = Invoke-Script {
+        .$scm.getcommit
+    }
+    $config.releasepath = "$now`_$revision`_$($config.project)"
+    write-host $config.releasepath
 
     # simply copy built site to web
     Invoke-Script {
@@ -57,22 +61,21 @@ task customrelease {
 
     # Populate web.config values
     Invoke-Script {
-$transform = @"
-<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
-  <appSettings>
-    <add key="releaseTime" value="$($config.releaseTime)" xdt:Transform="SetAttributes" xdt:Locator="Match(key)"/>
-    <add key="releaseBranch" value="master" xdt:Transform="SetAttributes" xdt:Locator="Match(key)"/>
-    <add key="googleAnalytics" value="$($config.googleAnalytics)" xdt:Transform="SetAttributes" xdt:Locator="Match(key)"/>
-  </appSettings>
-  <connectionStrings>
-    <add name="Jabbr" connectionString="$($config.connectionString)" xdt:Transform="SetAttributes" xdt:Locator="Match(name)"/>
-  </connectionStrings>
-</configuration>
-"@
-        $transformPath = ".\$($config.releasepath)\web\transform.config"
+        Convert-Xml ".\$($config.releasepath)\web\Web.config" {
+            param($xmlFile, $xml) 
 
-        Set-Content $transformPath $transform
-        Convert-Configuration ".\$($config.releasepath)\web\Web.config" $transformPath
+            function Set-Appsetting($xml, $name, $value) {
+                $item = $xml.appSettings.add | Where-Object { $_.key -eq $name }
+                $item.value = $value
+            }
+
+            Set-Appsetting $xml "releaseTime" $config.releaseTime
+            Set-Appsetting $xml "releaseBranch" "master"
+            Set-Appsetting $xml "googleAnalytics" $config.googleAnalytics
+
+            $conn = $xml.connectionStrings.add | Where-Object { $_.name -eq "Jabbr" }
+            $conn.connectionString = $config.connectionString
+        }
     }
 }
 
