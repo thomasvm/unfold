@@ -75,3 +75,19 @@ function Convert-Configuration {
     & $block $vars
 }
 
+function Convert-Xml {
+    param(
+        [Parameter(Position=0,Mandatory=1)][string]$path,
+        [Parameter(Position=1,Mandatory=1)][scriptblock]$script
+    )
+
+    $xmlFile = [xml](Get-Content $path)
+    $xml = $xmlFile.get_DocumentElement()
+
+    # Make variables available in scope
+    . $script $xmlFile $xml
+
+    # xml save need's fully specified path
+    $fullPath = Resolve-Path $path
+    $xmlFile.Save($fullPath)
+}
