@@ -1,11 +1,10 @@
 $config = New-Object PSObject -property @{ 
-    version="0.2.1";
+    version="0.3.0";
     releaseNotes=@"
 Additional functionality:
-* easier to include custom code
-* make source countrol implementation pluggable
-* Subversion support
-* fix git support
+* Convert-Xml modification function
+* Rollback info attached to $config when rolling back
+* Bug fixes
 "@
 }
 
