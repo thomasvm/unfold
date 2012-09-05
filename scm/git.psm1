@@ -1,3 +1,16 @@
+function Run-WithErrorAction {
+    param(
+        [string]$action,
+        [scriptblock]$script
+    )
+
+    $prev = $global:ErrorActionPreference
+    $global:ErrorActionPreference = $action
+    .$script
+    $global:ErrorActionPreference = $prev
+}
+
+
 function Get-Branch {
     $branch = "master"
 
@@ -10,7 +23,9 @@ function Get-Branch {
 
 function Checkout-Branch {
     $branch = Get-Branch
-    git checkout $branch 2> $null
+    Run-WithErrorAction "Continue" {
+        git checkout $branch 2> $null
+    }
 }
 
 function Get-ScmCommands
