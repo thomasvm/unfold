@@ -79,17 +79,16 @@ task build -depends updatecode -description "Builds the code using msbuild" {
     }
 
     $config.msbuild = $buildFiles
-    Invoke-Script {
-        $target = $config.buildconfiguration
-        If($target -eq $null) {
-            $target = "Debug"
-        }
+    If(-not $config.buildconfiguration) {
+        $config.buildconfiguration = "Debug"
+    }
 
+    Invoke-Script {
         Foreach($file in $config.msbuild) {
             Write-Host "Building file $file" -Fore Green
             # Wrap in exec to stop on failure
             Exec {
-                msbuild /p:Configuration=$target /target:Rebuild $file
+                msbuild /p:Configuration="$($config.buildconfiguration)" /target:Rebuild $file
             }
         }
     }
