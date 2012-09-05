@@ -184,14 +184,9 @@ function Invoke-Script
                     [Parameter(Position=0,Mandatory=1)][scriptblock]$cmd,
                     [Parameter(Position=1,Mandatory=0)][string]$errorMessage = ($msgs.error_bad_command -f $cmd)
                 )
-                & $cmd > output
-                $code = $lastExitCode
-            
-                $output = Get-Content output
-                $output | ForEach-Object { Write-Host $_ }
-                Remove-Item output
+                &$cmd 
 
-                if ($code -ne 0) {
+                if ($lastExitCode -ne 0) {
                     throw ("Exec: " + $errorMessage)
                 }
             }
