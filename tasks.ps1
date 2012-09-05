@@ -102,13 +102,13 @@ task release -depends build -description "Puts the built code inside a release f
         return
     }
 
-    $revision = $null
-
-    If($scm.getcommit) {
-        $revision = Invoke-Script {
+    $revision = Invoke-Script {
+        If($scm.getcommit) {
             return .$scm.getcommit
         }
+        return $null
     }
+    Write-Host "Revision is: $revision"
 
     If($revision) {
         $revision = $revision + '_'
