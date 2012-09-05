@@ -213,6 +213,7 @@ task setupiis -description "Creates/updates the IIS website configuration" {
     }
 
     $iisName = ValueOrDefault $config.iisname $config.project
+    $config.iisname = $iisName
 
     If (-not $iisName) {
         Write-Error "Unable to determine name to use in IIS"
