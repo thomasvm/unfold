@@ -17,6 +17,20 @@ function Run-Svn {
 
 function Get-ScmCommands
 {
+    $getcommit = {
+       If(Test-Path code) {
+           $restore = $true
+           cd code
+       }
+       $revisionInfo = Run-Svn info . | Where-Object { $_.StartsWith("Revision") }
+
+       If($restore) {
+           cd ..
+       }
+
+       return $revisionInfo.Split(':')[1].Trim()
+    }
+
     return @{
         initialcheckout = {
             Run-Svn co $config.repository code
@@ -33,19 +47,8 @@ function Get-ScmCommands
                 cd ..
             }
         }
-        getcommit = {
-            If(Test-Path code) {
-                $restore = $true
-                cd code
-            }
-            $revisionInfo = Run-Svn info . | Where-Object { $_.StartsWith("Revision") }
-
-            If($restore) {
-                cd ..
-            }
-
-            return $revisionInfo.Split(':')[1].Trim()
-        }
+        getcommit = $getcommit,
+        getcommitnumber = $getcommit,
         help = {
             Run-Svn help commit
         }
