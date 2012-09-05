@@ -359,11 +359,11 @@ task listremoteversions -description "Lists all versions available on the target
 
     $current = Get-CurrentFolder
 
-    foreach($folder in $remoteVersions) {
+    foreach($remote in $remoteVersions) {
         $cntr = "$counter".PadLeft(2, '0')
         Write-Host "$cntr`: " -Fore Green -NoNewLine
-        Write-Host $folder -NoNewLine
-        If($folder.Name -eq $current) {
+        Write-Host $remote -NoNewLine
+        If($remote.Name -eq $current) {
             Write-Host " (current)" -NoNewLine -Fore Yellow
         }
         Write-Host ""
@@ -379,16 +379,17 @@ task purgeoldreleases -description "Removes old releases" {
     $itemsToKeep = $remoteVersions.Length - $keep
 
     for($i = 0; $i -lt $itemsToKeep; $i++) {
-        $folder = $remoteVersions[$i]
+        $toRemove = $remoteVersions[$i]
 
-        If($folder.Name -eq $current) {
+        If($toRemove.Name -eq $current) {
             continue
         }
 
-        Write-Host "Removing $folder"
-        Invoke-Script -arguments $folder {
-            param($folder)
-            Remove-Item $folder -Recurse -Force
+        Invoke-Script -arguments $toRemove {
+            param($toRemove)
+            $toRemove = Join-Path $config.basePath $toRemove
+            Write-Host "Removing $toRemove"
+            Remove-Item $toRemove -Recurse -Force 
         }
     }
 }
