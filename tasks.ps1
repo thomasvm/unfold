@@ -166,7 +166,6 @@ task setupapppool -description "Configures application pool" {
         return
     }
 
-    Import-Module WebAdministration
     $apppool = ValueOrDefault $config.apppool $config.project
     $apppoolRuntime = ValueOrDefault $config.apppoolruntime "v4.0"
 
@@ -186,6 +185,7 @@ If the apppool configuration setting is missing we will take the project name:
     # Now create it
     Invoke-Script -arguments @{apppool=$apppool;runtime=$apppoolRuntime} {
         param($arguments)
+        Import-Module WebAdministration
 
         $appPool = "iis:\AppPools\$($arguments.apppool)"
         If ((Test-Path $appPool) -eq $false) {
