@@ -230,11 +230,11 @@ function Invoke-Script
             cd $config.basePath
         }
     
-        $ret = & $scr $arguments
+        $r = .$scr $arguments
 
         cd $folder
 
-        return $ret
+        return $r
     }    
 
     return $ret
