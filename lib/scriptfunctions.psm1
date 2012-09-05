@@ -85,9 +85,39 @@ function Convert-Xml {
     $xml = $xmlFile.get_DocumentElement()
 
     # Make variables available in scope
-    . $script $xmlFile $xml
+    .$script $xmlFile $xml
 
     # xml save need's fully specified path
     $fullPath = Resolve-Path $path
     $xmlFile.Save($fullPath)
+}
+
+function Remove-EmptyFolders {
+    param(
+        [Parameter(Position=0,Mandatory=1)][string]$path
+    )
+    Get-ChildItem $path -Recurse | Foreach-Object {
+        If(-not $_.PSIsContainer) {
+            return
+        }
+        $subitems = Get-ChildItem -Recurse -Path $_.FullName
+        if($subitems -eq $null)
+        {
+              Write-Host "Remove item: " + $_.FullName
+              Remove-Item $_.FullName
+        }
+        $subitems = $null
+    }
+}
+
+function Copy-WebProject {
+    param(
+        [Parameter(Position=0,Mandatory=1)][string]$path,
+        [Parameter(Position=1,Mandatory=1)][string]$destination
+    )
+    $sourceLength = (Resolve-Path $path).Path.Length
+    Get-ChildItem $path -Recurse -Exclude @('*.cs', '*.csproj') | Copy-Item -Destination {
+        $result = Join-Path $destination $_.FullName.Substring($sourceLength)
+        return $result
+    }
 }
