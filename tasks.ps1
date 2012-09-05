@@ -29,7 +29,7 @@ task updatecode -depends setup -description "updates the code from scm" {
 }
 
 task build -depends updatecode -description "Builds the code using msbuild" {
-    $customBuild = (Get-Task custombuild)
+    $customBuild = Get-Task custombuild
 
     If($customBuild) {
         Invoke-Task custombuild
