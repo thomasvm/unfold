@@ -166,7 +166,8 @@ function Invoke-Script
     # Remote scenario: create ps-session if not there yet
     if(-not($currentContext.sessions[$machine])) {
         $cred = Get-CMCredential $machine
-        $newSession = new-pssession $machine -Credential $cred
+        $port = ValueOrDefault $config.port 5986 
+        $newSession = new-pssession $machine -Credential $cred -UseSsl -Port $port
 
         $frameworkDirs = Get-FrameworkDirs
 
