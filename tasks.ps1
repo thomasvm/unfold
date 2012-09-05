@@ -295,7 +295,7 @@ task finalize -description "Creates a link pointing to current release" {
             Write-Host "Moving App_Offline out of the way"
             Move-Item "$($arguments.currentPath)\web\App_Offline.htm" "$($arguments.currentPath)\web\App_Offline.html"
         } Else {
-            Write-Host "Not App_Offline.htm found"
+            Write-Host "No App_Offline.htm file found"
         }
 
         Set-Content "$($arguments.currentPath)\pathinfo.txt" -Value $config.releasepath
