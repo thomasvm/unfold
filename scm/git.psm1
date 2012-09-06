@@ -33,7 +33,10 @@ function Get-ScmCommands
     $commands = @{}
 
     $commands.initialcheckout = {
-        git clone $config.repository code 2> $null 
+        Run-WithErrorAction "Continue" {
+            git clone $config.repository code 2> $null 
+        }
+
         cd code
         Checkout-Branch
         cd ..
@@ -44,9 +47,11 @@ function Get-ScmCommands
         $branch = Get-Branch
 
         Exec {
-            git fetch
-            git merge "origin/$branch"
-            Checkout-Branch
+            Run-WithErrorAction "Continue" {
+                git fetch 2> $null
+                git merge "origin/$branch" 2> $null
+                git checkout . 2> $null
+            }
         }
         cd ..
     }
