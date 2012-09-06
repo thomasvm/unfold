@@ -130,6 +130,8 @@ task release -depends build -description "Puts the built code inside a release f
 
     Invoke-Script {
         New-Item -type Directory $config.releasepath
+
+        Set-Content "$($config.releasepath)\pathinfo.txt" -Value $config.releasepath
     }
 
     If(Get-Task "customcopytorelease") {
@@ -297,8 +299,6 @@ task finalize -description "Creates a link pointing to current release" {
         } Else {
             Write-Host "No App_Offline.htm file found"
         }
-
-        Set-Content "$($arguments.currentPath)\pathinfo.txt" -Value $config.releasepath
     }
 
     Invoke-Task purgeoldreleases
