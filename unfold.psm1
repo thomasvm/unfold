@@ -60,16 +60,16 @@ function Initialize-Configuration {
     if(-not $env) {
         $env = ValueOrDefault $config.default dev
     }
+    $config.environment = $env
 
     Write-Host "Current environment is $env"
 
-    If(-not $config[$env]) {
-        return
-    }
-
-    foreach($key in $config[$env].Keys) {
-        $val = $config[$env][$key]
-        $config[$key] = $val
+    # Apply specific info
+    If($config[$env]) {
+        foreach($key in $config[$env].Keys) {
+            $val = $config[$env][$key]
+            $config[$key] = $val
+        }
     }
 
     $scm = ValueOrDefault $config.scm "git"
@@ -373,7 +373,7 @@ function Get-CurrentFolder {
         If(Test-Path $currentFolderInfoPath) {
             $current = Get-Content $currentFolderInfoPath
             return $current
-        }
+        } 
     } 
 
     return $current
