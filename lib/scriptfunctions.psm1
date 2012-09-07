@@ -12,10 +12,69 @@ function Expand-File {
         [Parameter(Position=0,Mandatory=1)]$file,
         [Parameter(Position=1,Mandatory=1)]$destination
     )
+
+    $source = (Resolve-Path $file).Path
+    $dest = (Resolve-Path $destination).Path
+
     $shell_app = new-object -com shell.application
-    $zip_file = $shell_app.namespace($file)
-    $destinationPath = $shell_app.namespace($destination)
-    $destinationPath.Copyhere($zip_file.items())
+
+    $zip_file = $shell_app.namespace($source)
+    $destinationPath = $shell_app.namespace($dest)
+    $destinationPath.CopyHere($zip_file.items())
+}
+
+function New-Zip {
+    param(
+       [Parameter(Mandatory=$true, Position=0)]
+       [String]$path, 
+       [Parameter(Mandatory=$true, Position=1)]
+       [String]$zip,
+       [Parameter(Mandatory=$false,Position=2)]
+       [switch]$force
+    )
+     
+    $Directory = Get-Item $path
+    
+    If (test-path $zip) { 
+      If($force) {
+        Remove-Item $zip
+      } Else {
+        echo "Zip file already exists at $zip" 
+        return 
+      }
+    }
+    
+    Set-content $zip ("PK" + [char]5 + [char]6 + ("$([char]0)" * 18)) 
+    (dir $zip).IsReadOnly = $false
+
+    $fullZipPath = (Resolve-Path $zip).Path
+    $shell_app = new-object -com shell.application
+    $zip_file = $shell_app.namespace($fullZipPath)
+    $zip_file.CopyHere($Directory.FullName)
+    Wait-Zipcount $fullZipPath 1
+}
+
+function Wait-Zipcount([string] $zipname, [int] $num) {
+    $ExplorerShell=NEW-OBJECT -comobject 'Shell.Application'
+    $count = count-zipfiles -zipname $zipname -ExplorerShell $ExplorerShell
+    while (($count -eq $null) -or ($count -lt $num) ) {
+        Write-Host "." -NoNewLine
+        Start-Sleep -milliseconds 100
+        $count = count-zipfiles -zipname $zipname -ExplorerShell $ExplorerShell
+    }
+    Write-Host "."
+}
+
+function Count-Zipfiles([string] $zipname, [object] $ExplorerShell=$NULL) {
+    if ((test-path $zipname) -eq $NULL) {
+        return $null
+    }
+    if ($ExplorerShell -eq $NULL) {
+        $ExplorerShell = new-object -comobject 'Shell.Application'
+    }
+    $zipdirfh = $ExplorerShell.Namespace($zipname)
+    $count = $zipdirfh.Items().Count
+    return $count
 }
 
 # Transform config
@@ -121,3 +180,7 @@ function Copy-WebProject {
         return $result
     }
 }
+
+Export-ModuleMember -function Start-Download, Expand-File, New-Zip, `
+                              Remove-EmptyFolders, Convert-Configuration, `
+                              Convert-Xml, Copy-WebProject

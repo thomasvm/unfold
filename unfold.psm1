@@ -121,20 +121,21 @@ function Invoke-Script
     param(
         [Parameter(Position=0,Mandatory=1)][scriptblock]$scriptblock,
         [Parameter(Position=1,Mandatory=0)][string]$machine,
-        [Parameter(Position=2,Mandatory=0)][psobject]$arguments
+        [Parameter(Position=2,Mandatory=0)][psobject]$arguments,
+        [Parameter(Position=3,Mandatory=0)][int]$port
     )
 
     $basePath = $config.basePath
 
     if($machine -eq "") {
-        If($config.buildlocal -and !$currentContext.releaseIndicated) {
+        If($config.localbuild -and !$currentContext.releaseIndicated) {
             # If configuration asks for local build and release is not 
             # fully executed, then we force machine to localhost
             $machine = "localhost"
             $basePath = $config.localbuildpath
 
             If(-not $basePath) {
-                Write-Error "localbuildpath must be set for buildlocal to work"
+                Write-Error "localbuildpath must be set for localbuild to work"
                 return
             }
         } Else {
@@ -184,10 +185,65 @@ function Invoke-Script
         return $ret
     }
 
+    $s = Get-DeploymentSession $machine $port
+
+    # invoke command on remote session
+    $ret = invoke-command -Session $s -argumentlist @($config, $scriptblock, $arguments) -ScriptBlock {
+        param([psobject]$config, [string]$script, [psobject]$arguments)
+    
+        $scr = $ExecutionContext.InvokeCommand.NewScriptBlock($script)
+
+        $folder = pwd
+    
+        if($config.basePath -and (Test-Path $config.basePath)) {
+            cd $config.basePath
+        }
+    
+        $r = .$scr $arguments
+
+        cd $folder
+
+        return $r
+    }    
+
+    return $ret
+}
+
+function Copy-ToMachine {
+    param(
+        [Paramater(Position=0,Mandatory=1)][string]$machine,
+        [Paramater(Position=1,Mandatory=1)][string]$file,
+        [Paramater(Position=1,Mandatory=1)][string]$destination
+    )
+
+    $session = Get-DeploymentSession $machine
+
+    $content = Get-Content -encoding byte $file
+    # Copy the binary contents to the remote computer
+    Invoke-Command -Session $s -argumentlist @($config,$content,$destination) -Command { 
+        param($config,$content,$destination)
+
+        $current = pwd
+        If(Test-Path $config.basePath) {
+            cd $config.basePath
+        }
+        
+        $ARGS | Set-Content $destination -Force -Encoding byte
+    } 
+}
+
+function Get-DeploymentSession {
+    param (
+        [string]$machine,
+        [int]$port
+    )
+
     # Remote scenario: create ps-session if not there yet
     if(-not($currentContext.sessions[$machine])) {
         $cred = Get-CMCredential $machine
-        $port = ValueOrDefault $config.port 5986 
+        If(-not $port) {
+            $port = ValueOrDefault $config.port 5986 
+        }
         $newSession = new-pssession $machine -Credential $cred -UseSsl -Port $port
 
         $frameworkDirs = Get-FrameworkDirs
@@ -232,34 +288,13 @@ function Invoke-Script
         $currentContext.sessions[$machine] = $newSession
     }
 
-    $s = $currentContext.sessions[$machine] 
-
-    # invoke command on remote session
-    $ret = invoke-command -Session $s -argumentlist @($config, $scriptblock, $arguments) -ScriptBlock {
-        param([psobject]$config, [string]$script, [psobject]$arguments)
-    
-        $scr = $ExecutionContext.InvokeCommand.NewScriptBlock($script)
-
-        $folder = pwd
-    
-        if($config.basePath -and (Test-Path $config.basePath)) {
-            cd $config.basePath
-        }
-    
-        $r = .$scr $arguments
-
-        cd $folder
-
-        return $r
-    }    
-
-    return $ret
+    return $currentContext.sessions[$machine] 
 }
 
 function Set-ReleaseExecuted
 {
     param(
-        [Parameter(Position=0,Mandatory=1)]$executed = $false
+        [Parameter(Position=0,Mandatory=0)]$executed = $false
     )
     $currentContext.releaseIndicated = $executed
 }

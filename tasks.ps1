@@ -17,12 +17,13 @@ task setup -description "creates the folder that will contain the releases" {
     }
 
     If($config.localbuild) {
+        Write-Host "Ensuring local build location"
         If(-not $config.localbuildpath) {
             throw "localbuildpath must be set"
         }
 
         If(-not(Test-Path $config.localbuildpath)) {
-            New-Item -type Directory $config.localbuildpath
+            New-Item $config.localbuildpath -type Directory 
         }
     }
 }
@@ -174,6 +175,16 @@ task release -depends build -description "Puts the built code inside a release f
 }
 
 task releasefinalize -depends release -description "Marks the release as finalized (ready for configuration)" {
+    If($config.localbuild) {
+        Invoke-Script {
+            New-Zip $config.releasepath "$($config.releasepath).zip"
+        }
+
+        # Invoke-Script {
+        #     Remove-Item "$($config.releasepath).zip"
+        # }
+    }
+
     Set-ReleaseExecuted
 }
 
