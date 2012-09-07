@@ -15,9 +15,20 @@ task setup -description "creates the folder that will contain the releases" {
             New-Item -Type Directory $config.basePath
         }
     }
+
+    If($config.localbuild) {
+        If(-not $config.localbuildpath) {
+            throw "localbuildpath must be set"
+        }
+
+        If(-not(Test-Path $config.localbuildpath)) {
+            New-Item -type Directory $config.localbuildpath
+        }
+    }
 }
 
 task updatecode -depends setup -description "updates the code from scm" {
+    Set-ReleaseExecuted $false
     Invoke-Script {
         If(-not (Test-Path code)) {
             .$scm.initialcheckout
@@ -162,6 +173,10 @@ task release -depends build -description "Puts the built code inside a release f
     }
 }
 
+task releasefinalize -depends release -description "Marks the release as finalized (ready for configuration)" {
+    Set-ReleaseExecuted
+}
+
 task setupapppool -description "Configures application pool" {
     If(Get-Task customsetupapppool) {
         Invoke-Task customsetupapppool
@@ -304,7 +319,7 @@ task finalize -description "Creates a link pointing to current release" {
     Invoke-Task purgeoldreleases
 }
 
-task deploy -depends @('release','setupapppool','uninstallcurrentrelease','setupiis', 'finalize') -description "Deploys project"
+task deploy -depends @('release', 'releasefinalize','setupapppool','uninstallcurrentrelease','setupiis', 'finalize') -description "Deploys project"
 
 task rollback -description "Rolls back to a previous version" {
     # Index in versions is 1-based

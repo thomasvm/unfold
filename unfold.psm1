@@ -110,6 +110,11 @@ $currentContext.config = $config
 $currentContext.scripts = @{}
 $currentContext.scriptLoaded = $false
 
+# We only set this to false once build starts,
+# otherwise simple Invoke-Script tasks will first
+# have to call Set-ReleaseExecuted
+$currentContext.releaseIndicated = $true
+
 # Remote script invocation
 function Invoke-Script 
 {
@@ -119,8 +124,24 @@ function Invoke-Script
         [Parameter(Position=2,Mandatory=0)][psobject]$arguments
     )
 
+    $basePath = $config.basePath
+
     if($machine -eq "") {
-        $machine = $currentContext.config.machine
+        If($config.buildlocal -and !$currentContext.releaseIndicated) {
+            # If configuration asks for local build and release is not 
+            # fully executed, then we force machine to localhost
+            $machine = "localhost"
+            $basePath = $config.localbuildpath
+
+            If(-not $basePath) {
+                Write-Error "localbuildpath must be set for buildlocal to work"
+                return
+            }
+        } Else {
+            # otherwise use remote machine
+            $machine = $currentContext.config.machine
+        }
+
         if($machine -eq "" -or $machine -eq $null) {
             Write-Error "machine argument not provided and not in config"
             return
@@ -146,8 +167,8 @@ function Invoke-Script
         }
 
         # change to base path 
-        if($config.basePath -and (Test-Path $config.basePath)) {
-            cd $config.basePath
+        if($basePath -and (Test-Path $basePath)) {
+            cd $basePath
         } 
 
         # Run the script
@@ -233,6 +254,14 @@ function Invoke-Script
     }    
 
     return $ret
+}
+
+function Set-ReleaseExecuted
+{
+    param(
+        [Parameter(Position=0,Mandatory=1)]$executed = $false
+    )
+    $currentContext.releaseIndicated = $executed
 }
 
 # Remove all open sessions
@@ -397,5 +426,6 @@ function Install-Unfold {
 
 export-modulemember -function Set-Config, Set-Environment, Add-ScriptModule, `
                               Initialize-Configuration, Import-DefaultTasks, Remove-Sessions, `
+                              Set-ReleaseExecuted, `
                               Invoke-Script, Set-BeforeTask, Set-AfterTask, Convert-Configuration, `
                               Get-CurrentFolder, Get-DeployedFolders, Install-Unfold -variable config
