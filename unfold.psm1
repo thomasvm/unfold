@@ -88,6 +88,10 @@ function Initialize-Configuration {
     Set-Variable -name scmname -Value $name -Scope 1 
 
     Add-ScriptModule "$scriptPath\lib\scriptfunctions.psm1" "scriptfunctions"
+
+    If($config.localbuild) {
+        Add-ScriptModule "$scriptPath\lib\sendfile.psm1" "sendfile"
+    }
 }
 
 function ValueOrDefault($value, $default) {
@@ -224,19 +228,7 @@ function Copy-ToMachine {
 
     # Otherwise, get session and use it to push content
     $session = Get-DeploymentSession $machine
-
-    $content = Get-Content -encoding byte $file
-    # Copy the binary contents to the remote computer
-    Invoke-Command -Session $s -argumentlist @($config,$content,$destination) -Command { 
-        param($config,$content,$destination)
-
-        $current = pwd
-        If(Test-Path $config.basePath) {
-            cd $config.basePath
-        }
-        
-        $ARGS | Set-Content $destination -Force -Encoding byte
-    } 
+    Send-File $file $destination $session
 }
 
 function Get-DeploymentSession {
