@@ -7,7 +7,7 @@ function Start-Download {
     $webclient.DownloadFile($url, $destination)
 }
 
-function Expand-File {
+function Expand-Zip {
     param(
         [Parameter(Position=0,Mandatory=1)]$file,
         [Parameter(Position=1,Mandatory=1)]$destination
@@ -181,6 +181,6 @@ function Copy-WebProject {
     }
 }
 
-Export-ModuleMember -function Start-Download, Expand-File, New-Zip, `
+Export-ModuleMember -function Start-Download, Expand-Zip, New-Zip, `
                               Remove-EmptyFolders, Convert-Configuration, `
                               Convert-Xml, Copy-WebProject

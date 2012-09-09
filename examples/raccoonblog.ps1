@@ -55,7 +55,7 @@ task setupravendb {
         # Download an unzip, these functions come from scriptfunctions.psm1
         New-Item -type Directory -Name "ravendb"
         Start-Download "http://builds.hibernatingrhinos.com/Download/9537" "$basePath\ravendb\ravendb.zip"
-        Expand-File "$basePath\ravendb\ravendb.zip" "$basePath\ravendb"
+        Expand-Zip "$basePath\ravendb\ravendb.zip" "$basePath\ravendb"
     }
 
     # Change port to 8080
