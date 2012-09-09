@@ -192,6 +192,7 @@ task releasefinalize -depends release -description "Marks the release as finaliz
 
         # Remove zip on original build
         Invoke-Script {
+            Remove-Item -Recurse $config.releasepath
             Remove-Item "$($config.releasepath).zip"
         }
     }
