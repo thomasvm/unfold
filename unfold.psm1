@@ -211,11 +211,18 @@ function Invoke-Script
 
 function Copy-ToMachine {
     param(
-        [Paramater(Position=0,Mandatory=1)][string]$machine,
-        [Paramater(Position=1,Mandatory=1)][string]$file,
-        [Paramater(Position=1,Mandatory=1)][string]$destination
+        [Parameter(Position=0,Mandatory=1)][string]$machine,
+        [Parameter(Position=1,Mandatory=1)][string]$file,
+        [Parameter(Position=2,Mandatory=1)][string]$destination
     )
 
+    # On localhost? Simply perform a copy
+    If($machine -eq "localhost") {
+        Copy-Item $file -Destination $destination
+        return
+    }
+
+    # Otherwise, get session and use it to push content
     $session = Get-DeploymentSession $machine
 
     $content = Get-Content -encoding byte $file

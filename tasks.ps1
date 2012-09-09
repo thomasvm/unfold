@@ -180,9 +180,20 @@ task releasefinalize -depends release -description "Marks the release as finaliz
             New-Zip $config.releasepath "$($config.releasepath).zip"
         }
 
-        # Invoke-Script {
-        #     Remove-Item "$($config.releasepath).zip"
-        # }
+        $file = Resolve-Path "$($config.localbuildpath)\$($config.releasepath).zip"
+        $destination = "$($config.basepath)\$($config.releasepath).zip"
+        Copy-ToMachine $config.machine $file $destination
+
+        # Now we must specify machine explicitely, otherwise we will extract locally
+        Invoke-Script -machine $config.machine -port $config.port -arguments @($destination) {
+            param($zipfile)
+            Expand-Zip $zipfile $config.basepath
+        }
+
+        # Remove zip on original build
+        Invoke-Script {
+            Remove-Item "$($config.releasepath).zip"
+        }
     }
 
     Set-ReleaseExecuted
