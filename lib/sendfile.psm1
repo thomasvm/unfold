@@ -89,4 +89,8 @@ function Send-File {
         Get-Item $destination
         [GC]::Collect()
     }
+
+    ## Stream the chunks into the remote script
+    $streamChunks | Invoke-Command -Session $session $remoteScript `
+        -ArgumentList $destination,$sourceBytes.Length
 }
