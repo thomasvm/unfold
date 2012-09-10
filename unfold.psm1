@@ -293,7 +293,7 @@ function Get-DeploymentSession {
 function Set-ReleaseExecuted
 {
     param(
-        [Parameter(Position=0,Mandatory=0)]$executed = $false
+        [Parameter(Position=0,Mandatory=0)]$executed = $true
     )
     $currentContext.releaseIndicated = $executed
 }
