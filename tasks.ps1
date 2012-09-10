@@ -182,12 +182,14 @@ task releasefinalize -depends release -description "Marks the release as finaliz
 
         $file = Resolve-Path "$($config.localbuildpath)\$($config.releasepath).zip"
         $destination = "$($config.basepath)\$($config.releasepath).zip"
+        Write-Host "Copying $file to $destination (on machine $($config.machine))"
         Copy-ToMachine $config.machine $file $destination
 
         # Now we must specify machine explicitely, otherwise we will extract locally
         Invoke-Script -machine $config.machine -port $config.port -arguments @($destination) {
             param($zipfile)
-            Expand-Zip $zipfile $config.basepath
+            Expand-Zip $zipfile $config.basePath
+            Remove-Item $zipfile
         }
 
         # Remove zip on original build
@@ -195,6 +197,8 @@ task releasefinalize -depends release -description "Marks the release as finaliz
             Remove-Item -Recurse $config.releasepath
             Remove-Item "$($config.releasepath).zip"
         }
+
+        Write-Host "Release towards $($config.releasepath) complete" -Fore Green
     }
 
     Set-ReleaseExecuted
