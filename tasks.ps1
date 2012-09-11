@@ -29,7 +29,7 @@ task setup -description "creates the folder that will contain the releases" {
 }
 
 task updatecode -depends setup -description "updates the code from scm" {
-    Set-ReleaseExecuted $false
+    Set-ForceLocalInvokeScript $true
     Invoke-Script {
         If(-not (Test-Path code)) {
             .$scm.initialcheckout
@@ -201,7 +201,7 @@ task releasefinalize -depends release -description "Marks the release as finaliz
         Write-Host "Release towards $($config.releasepath) complete" -Fore Green
     }
 
-    Set-ReleaseExecuted
+    Set-ForceLocalInvokeScript $false
 }
 
 task setupapppool -description "Configures application pool" {
@@ -435,3 +435,4 @@ task purgeoldreleases -description "Removes old releases" {
         }
     }
 }
+

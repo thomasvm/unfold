@@ -116,8 +116,8 @@ $currentContext.scriptLoaded = $false
 
 # We only set this to false once build starts,
 # otherwise simple Invoke-Script tasks will first
-# have to call Set-ReleaseExecuted
-$currentContext.releaseIndicated = $true
+# have to call Set-ForceLocalInvokeScript
+$currentContext.forceLocal = $false
 
 # Remote script invocation
 function Invoke-Script 
@@ -132,7 +132,7 @@ function Invoke-Script
     $basePath = $config.basePath
 
     if($machine -eq "") {
-        If($config.localbuild -and !$currentContext.releaseIndicated) {
+        If($config.localbuild -and $currentContext.forceLocal) {
             # If configuration asks for local build and release is not 
             # fully executed, then we force machine to localhost
             $machine = "localhost"
@@ -290,12 +290,12 @@ function Get-DeploymentSession {
     return $currentContext.sessions[$machine] 
 }
 
-function Set-ReleaseExecuted
+function Set-ForceLocalInvokeScript
 {
     param(
         [Parameter(Position=0,Mandatory=0)]$executed = $true
     )
-    $currentContext.releaseIndicated = $executed
+    $currentContext.forceLocal = $executed
 }
 
 # Remove all open sessions
@@ -460,6 +460,6 @@ function Install-Unfold {
 
 export-modulemember -function Set-Config, Set-Environment, Add-ScriptModule, `
                               Initialize-Configuration, Import-DefaultTasks, Remove-Sessions, `
-                              Set-ReleaseExecuted, `
+                              Set-ForceLocalInvokeScript, `
                               Invoke-Script, Set-BeforeTask, Set-AfterTask, Convert-Configuration, `
                               Get-CurrentFolder, Get-DeployedFolders, Install-Unfold -variable config
