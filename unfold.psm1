@@ -168,7 +168,7 @@ function Invoke-Script
                 }
              }
              # Reset, all imports are done
-             $currentContext.scriptsLoaded = $true
+             $currentContext.scriptLoaded = $true
         }
 
         # change to base path 
