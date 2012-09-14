@@ -281,7 +281,7 @@ task setupiis -description "Creates/updates the IIS website configuration" {
     }
 
     $bindings = $config.bindings
-
+    
     If(-not $bindings) {
         Write-Warning "It is not recommended to install website without bindings"
         Write-Warning "Please set bindings in configuration file"
@@ -296,15 +296,25 @@ task setupiis -description "Creates/updates the IIS website configuration" {
 
     Invoke-Script -arguments @{iisName=$iisName;bindings=$bindings} {
         param($arguments)
-        $iisPath    = "iis:\\Sites\$($arguments.iisName)"
+
+        $iisName = $arguments.iisName
+        $bindings = $arguments.bindings
+
+        # Convert to array
+        If($bindings.GetType().Name -eq "ArrayList") {
+            $arr = @()
+            Foreach($b in $bindings) {
+                $arr += $b
+            }
+            $bindings = $arr
+        }
+
+        $iisPath    = "iis:\\Sites\$iisName"
         $outputPath = "$($config.basePath)\$($config.releasepath)\web"
 
         If(Test-Path "$outputPath\App_Offline.html") {
             Move-Item "$outputPath\App_Offline.html" -Destination "$outputPath\App_Offline.htm"
         } 
-
-        $iisName = $arguments.iisName
-        $bindings = $arguments.bindings 
 
         $apppool = $config.apppool
 
