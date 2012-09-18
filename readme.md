@@ -1,9 +1,22 @@
 # Unfold
 Unfold is a **Capistrano for .net** and/or Windows machines. It gives you the ability to easily create and customize your deployment scenario's without having to resort to complex tools that are hard to automize or difficult to setup. Unfold is _only_ powershell, so there's very little magic going on under the hood. 
 
-For access to the remote machines Unfold depends on [Powershell Remoting](http://msdn.microsoft.com/en-us/library/windows/desktop/ee706585.aspx), with access happening over https. Powershell Remoting allows us to obtain a session to a remote machine on which we can then invoke commands or scripblock, providing an viable alternative to SSH on Windows machines. Check the wiki for [instructions on how to setup Powershell Remoting over https](/thomasvm/unfold/wiki/Setting-up-Powershell-Remoting).
+We depend on two components:
+    1. [Powershell Remoting](http://msdn.microsoft.com/en-us/library/windows/desktop/ee706585.aspx) for access to the remote machines, the Windows equivalent of SSH. This allows us to easily execute Powershell scripts on a remote machine. 
+    2. The excellent [psake](https://github.com/psake/psake) library for structuring the different tasks that need to happen during a deploy.
 
-For structuring the different tasks that need to happen during a deploy we depend on the excellent [psake](https://github.com/psake/psake) library. Psake "avoids the angle-bracket tax associated with executable XML by leveraging the PowerShell syntax in your build scripts. " As a result it also makes a perfect fit for describing deployment steps.
+What we provide is the following:
+    1. a set of functions to make executing powershell code on a remote server very, very easy.
+    2. a super simple configuration system
+    3. a set of _default_ tasks with sane defaults, easy to extend
+    4. some utility functions for typical deployment operation
+
+The result is a deployment solution that:
+    1. deploys code that is based on what is in Source Control, not what's in your development folder
+    2. makes it very simple to deploy to different environments (dev, staging, production...)
+    3. has task hooks. Need some custom setup like installing a windows service? Simply create a psake task for it and hook it up into the standard flow
+    4. has no external dependencies except PowerShell
+    5. has sane directory structuring and as a result: rollbacks!
 
 ## Getting started
 The easiest way to get up and running is through nuget. In the Package Manager Console simply type 
@@ -23,18 +36,16 @@ Alternatively, you can also [install Unfold in your user profile](/thomasvm/unfo
 ## Quickstart
 Now that unfold is in your project:
 
-1. checkout the `deploy.ps1` file, it contains both the configuration values and custom tasks for your project. This is what you customize. Note that Visual Studio by default does not have support for PowerShell syntax highlighting, you might want to open the file in another editor or consider installing [PowerGUI extensions](http://visualstudiogallery.msdn.microsoft.com/01516103-d487-4a7e-bb40-c15ec709afa3/) or [TextHighlighterExtensionSetup](http://visualstudiogallery.msdn.microsoft.com/6706b602-6f10-4fd1-8e14-75840f855569/)
-2. Open a powershell command-line into the deployment folder and execute (or change the directory of the Package Manager Console to the deployment folder)
+1. open the `deploy.ps1` file, it contains both the configuration values and custom tasks for your project. This is what you customize. Note that Visual Studio by default does not have support for PowerShell syntax highlighting, you might want to open the file in another editor or consider installing [PowerGUI extensions](http://visualstudiogallery.msdn.microsoft.com/01516103-d487-4a7e-bb40-c15ec709afa3/) or [TextHighlighterExtensionSetup](http://visualstudiogallery.msdn.microsoft.com/6706b602-6f10-4fd1-8e14-75840f855569/)
+2. have a look at the [examples](https://github.com/thomasvm/unfold/tree/master/examples)
+3. Open a powershell command-line into the deployment folder and execute (or change the directory of the Package Manager Console to the deployment folder)
 
 	```posh
         .\unfold.ps1 deploy -properties @{env="dev"}
 	```		
 
-   If your default configuration is still set to dev, you can skip the `-properties` part
-
-3. check the output and adjust the configuration as needed
-4. checkout the [examples](/thomasvm/unfold/tree/master/examples)
-5. start writing custom extensions by adding psake tasks to the `deploy.ps1` file
+4. check the output and adjust the configuration as needed
+5. customize your deployment by writing custom tasks to the `deploy.ps1` file
 
 ## Deployment structure
 Now some more detail. All unfold needs are two files
@@ -145,7 +156,7 @@ Executing Unfold happens through the `unfold.ps1` script. The following options 
   Applying .config file [transformations](http://msdn.microsoft.com/en-us/library/dd465326.aspx) from a command-line is overly complex, this helper functions simply needs 3 parameters: the input config, the transform config file and the output path.There's also a -local switch, that allows you to run the transformation locally (in the context where you are executing unfold) or on the deployment target. Executing transformations has never been easier. 
 
 ## Customizing
-* Every default task is fully overrideable by defining a task that have the same name prefixed with `custom`
+* Every default task is fully overrideable by defining a task that have the same name prefixed with `custom`. For example, if you need to override the default build, simple create a task called `custombuild` and we'll use that instead of the standard implementation.
 * You can _extend_ any task by executing additional tasks before or after them. To do so, you simply need to create a custom task and then use the `Set-AfterTask` or `Set-BeforeTask` functions to make sure they are executed before or after the mentioned task
 
 ```posh
@@ -166,6 +177,5 @@ Executing Unfold happens through the `unfold.ps1` script. The following options 
 
 ### TODO
 
-* implement different strategies for getting the code _on the other side_: ftp, copy over powershell session, BITS
 * hg support, and other scms
 * Create-AssemblyInfo function for generating a shared assembmy info. Based on [this](https://github.com/ayende/rhino-mocks/blob/master/psake_ext.ps1)
