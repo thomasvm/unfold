@@ -1,10 +1,12 @@
 $config = New-Object PSObject -property @{ 
-    version="0.3.0";
+    version="0.4.0";
     releaseNotes=@"
 Additional functionality:
-* Convert-Xml modification function
-* Rollback info attached to $config when rolling back
-* Bug fixes
+* Possibility to build an package locally in order to decrease number of required build tools on deployment server
+* Full Powershell zip functions for both creating and unpacking zips
+* Functions for copying files to target machine over PSSession
+* Make WinRM port configurable
+* Lots and lots of bug fixes
 "@
 }
 
