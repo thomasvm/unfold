@@ -2,21 +2,24 @@
 Unfold is a **Capistrano for .net** and/or Windows machines. It gives you the ability to easily create and customize your deployment scenario's without having to resort to complex tools that are hard to automize or difficult to setup. Unfold is _only_ powershell, so there's very little magic going on under the hood. 
 
 We depend on two components:
-    1. [Powershell Remoting](http://msdn.microsoft.com/en-us/library/windows/desktop/ee706585.aspx) for access to the remote machines, the Windows equivalent of SSH. This allows us to easily execute Powershell scripts on a remote machine. 
-    2. The excellent [psake](https://github.com/psake/psake) library for structuring the different tasks that need to happen during a deploy.
+
+1. [Powershell Remoting](http://msdn.microsoft.com/en-us/library/windows/desktop/ee706585.aspx) for access to the remote machines, the Windows equivalent of SSH. This allows us to easily execute Powershell scripts on a remote machine. 
+2. The excellent [psake](https://github.com/psake/psake) library for structuring the different tasks that need to happen during a deploy.
 
 What we provide is the following:
-    1. a set of functions to make executing powershell code on a remote server very, very easy.
-    2. a super simple configuration system
-    3. a set of _default_ tasks with sane defaults, easy to extend
-    4. some utility functions for typical deployment operation
+
+* a set of functions to make executing powershell code on a remote server very, very easy.
+* a super simple configuration system
+* a set of _default_ tasks with sane defaults, easy to extend
+* some utility functions for typical deployment operation
 
 The result is a deployment solution that:
-    1. deploys code that is based on what is in Source Control, not what's in your development folder
-    2. makes it very simple to deploy to different environments (dev, staging, production...)
-    3. has task hooks. Need some custom setup like installing a windows service? Simply create a psake task for it and hook it up into the standard flow
-    4. has no external dependencies except PowerShell
-    5. has sane directory structuring and as a result: rollbacks!
+
+* deploys code that is based on what is in Source Control, not what's in your development folder
+* makes it very simple to deploy to different environments (dev, staging, production...)
+* has task hooks. Need some custom setup like installing a windows service? Simply create a psake task for it and hook it up into the standard flow
+* has no external dependencies except PowerShell
+* has sane directory structuring and as a result: rollbacks!
 
 ## Getting started
 The easiest way to get up and running is through nuget. In the Package Manager Console simply type 
