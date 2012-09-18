@@ -1,6 +1,6 @@
 ## Deployment recipe for Jabbr, the SignalR based 
 ## web chat application. 
-## Becausee Jabbr has such a good build script, we can
+## Because Jabbr has such a good build script, we can
 ## override the default build step and simply call the
 ## build script that's provided by Jabbr itself.
 
