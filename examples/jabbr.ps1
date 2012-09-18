@@ -69,6 +69,7 @@ task customrelease {
         Convert-Xml ".\$($config.releasepath)\web\Web.config" {
             param($xmlFile, $xml) 
 
+            # create function for setting appsettings
             function Set-Appsetting($xml, $name, $value) {
                 $item = $xml.appSettings.add | Where-Object { $_.key -eq $name }
                 $item.value = $value
