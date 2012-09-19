@@ -15,11 +15,12 @@ What we provide is the following:
 
 The result is a deployment solution that:
 
-* deploys code that is based on what is in Source Control, not what's in your development folder
+* deploys based on what's in source control
 * makes it very simple to deploy to different environments (dev, staging, production...)
-* has task hooks. Need some custom setup like installing a windows service? Simply create a psake task for it and hook it up into the standard flow
-* has no external dependencies except PowerShell
-* has sane directory structuring and as a result: rollbacks!
+* has task hooks.
+* has rollbacks.
+
+Interested? Have a look at our [examples](https://github.com/thomasvm/unfold/tree/master/examples) to get an idea of what is possible.
 
 ## Getting started
 The easiest way to get up and running is through nuget. In the Package Manager Console simply type 
