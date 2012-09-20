@@ -45,7 +45,7 @@ Now that unfold is in your project:
 3. Open a powershell command-line into the deployment folder and execute (or change the directory of the Package Manager Console to the deployment folder)
 
 	```posh
-        .\unfold.ps1 deploy -properties @{env="dev"}
+        .\unfold.ps1 deploy
 	```		
 
 4. check the output and adjust the configuration as needed
@@ -141,7 +141,7 @@ Executing Unfold happens through the `unfold.ps1` script. The following options 
 
 3. Some tasks can have parameters (e.g. rollback) these are passed in using the -properties parameter, combined with a hashtable
 
-        .\unfold.ps1 rollback -properties @{env="production";to=5}
+        .\unfold.ps1 rollback -properties @{to=5} -on production
 
 ## Important functions        
 
