@@ -10,8 +10,8 @@ What we provide is the following:
 
 * a set of functions to make executing powershell code on a remote server very, very easy.
 * a super simple configuration system
-* a set of _default_ tasks with sane defaults, easy to extend
-* some utility functions for typical deployment operation
+* a set of _standard_ tasks with sane defaults, easy to extend
+* some utility functions for typical deployment operations
 
 The result is a deployment solution that:
 
