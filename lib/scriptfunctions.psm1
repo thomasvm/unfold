@@ -119,7 +119,9 @@ function Convert-Configuration {
 
         Set-Content "transform.msbuild" $msbuild
 
-        msbuild "transform.msbuild"
+        Exec {
+            msbuild "transform.msbuild"
+        }
 
         # Success? remove temp, otherwise move back
         If(Test-Path $arguments.destination) {
