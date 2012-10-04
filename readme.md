@@ -1,26 +1,7 @@
 # Unfold
 Unfold is a **Capistrano for .net** and/or Windows machines. It gives you the ability to easily create and customize your deployment scenario's without having to resort to complex tools that are hard to automize or difficult to setup. Unfold is _only_ powershell, so there's very little magic going on under the hood. 
 
-We depend on two components:
-
-1. [Powershell Remoting](http://msdn.microsoft.com/en-us/library/windows/desktop/ee706585.aspx) for access to the remote machines, the Windows equivalent of SSH. This allows us to easily execute Powershell scripts on a remote machine. 
-2. The excellent [psake](https://github.com/psake/psake) library for structuring the different tasks that need to happen during a deploy.
-
-What we provide is the following:
-
-* a set of functions to make executing powershell code on a remote server very, very easy.
-* a super simple configuration system
-* a set of _standard_ tasks with sane defaults, easy to extend
-* some utility functions for typical deployment operations
-
-The result is a deployment solution that:
-
-* deploys based on what's in source control
-* makes it very simple to deploy to different environments (dev, staging, production...)
-* has task hooks.
-* has rollbacks.
-
-Interested? Have a look at our [examples](https://github.com/thomasvm/unfold/tree/master/examples) to get an idea of what is possible.
+For updates and info, please check [my blog](http://thomasvm.github.com)
 
 ## Getting started
 The easiest way to get up and running is through nuget. In the Package Manager Console simply type 
