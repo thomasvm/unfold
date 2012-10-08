@@ -212,6 +212,7 @@ task setupapppool -description "Configures application pool" {
 
     $apppool = ValueOrDefault $config.apppool $config.project
     $apppoolRuntime = ValueOrDefault $config.apppoolruntime "v4.0"
+    $apppoolMode = ValueOrDefault $config.apppoolmode "Integrated"
 
     If($apppool -eq $null) {
         $msg = @"
@@ -227,7 +228,7 @@ If the apppool configuration setting is missing we will take the project name:
     $config.apppool = $apppool
 
     # Now create it
-    Invoke-Script -arguments @{apppool=$apppool;runtime=$apppoolRuntime} {
+    Invoke-Script -arguments @{apppool=$apppool;runtime=$apppoolRuntime;mode=$apppoolMode} {
         param($arguments)
         Import-Module WebAdministration
 
@@ -236,6 +237,14 @@ If the apppool configuration setting is missing we will take the project name:
             New-Item $appPool
         }
         Set-ItemProperty $appPool -name managedRuntimeVersion -value $arguments.runtime
+
+        $pipelineMode = 0 # Integrated
+
+        If($arguments.mode -eq "Classic") {
+            $pipelineMode = 1 # Classic
+        }
+
+        Set-ItemProperty $appPool -name managedPipelineMode -value $pipelineMode
     }
 }
 
