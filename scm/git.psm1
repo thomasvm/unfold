@@ -57,7 +57,6 @@ function Get-ScmCommands
     }
 
     $commands.getcommit = {
-        Write-Host "Getting git commit"
         cd code
         $gitLog = git log --oneline -1
         cd ..
