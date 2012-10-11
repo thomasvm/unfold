@@ -308,33 +308,12 @@ task setupiis -description "Creates/updates the IIS website configuration" {
 
         $iisName = $arguments.iisName
         $bindings = $arguments.bindings
-
-        # Convert to array
-        If($bindings.GetType().Name -eq "ArrayList") {
-            $arr = @()
-            Foreach($b in $bindings) {
-                $arr += $b
-            }
-            $bindings = $arr
-        }
-
-        $iisPath    = "iis:\\Sites\$iisName"
         $outputPath = "$($config.basePath)\$($config.releasepath)\web"
 
-        If(Test-Path "$outputPath\App_Offline.html") {
-            Move-Item "$outputPath\App_Offline.html" -Destination "$outputPath\App_Offline.htm"
-        } 
-
-        $apppool = $config.apppool
-
-        # Site Already set up?
-        If (Test-Path $iisPath) {
-            Set-ItemProperty $iisPath -name physicalPath    -value $outputPath
-            Set-ItemProperty $iisPath -name bindings        -value $bindings
-            Set-ItemProperty $iispath -name applicationPool -value "$apppool"
-        } Else {
-            New-Item $iisPath -physicalPath $outputPath -bindings $bindings -applicationPool $apppool
-        }
+        Set-IISSite -name $iisName `
+                    -path $outputPath `
+                    -apppool $config.apppool `
+                    -bindings $bindings
     }
 }
 

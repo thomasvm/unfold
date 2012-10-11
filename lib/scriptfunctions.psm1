@@ -183,6 +183,36 @@ function Copy-WebProject {
     }
 }
 
+function Set-IISSite {
+    param(
+        [Parameter(Position=0,Mandatory=1)][string]$name,
+        [Parameter(Position=1,Mandatory=1)][string]$path,
+        [Parameter(Position=2,Mandatory=1)][string]$apppool,
+        [Parameter(Position=3,Mandatory=1)]$bindings
+    )
+    Import-Module WebAdministration
+
+    # Convert to array
+    If($bindings.GetType().Name -eq "ArrayList") {
+        $arr = @()
+        Foreach($b in $bindings) {
+            $arr += $b
+        }
+        $bindings = $arr
+    }
+
+    $iisPath    = "iis:\\Sites\$name"
+
+    # Site Already set up?
+    If (Test-Path $iisPath) {
+        Set-ItemProperty $iisPath -name physicalPath    -value $path
+        Set-ItemProperty $iisPath -name bindings        -value $bindings
+        Set-ItemProperty $iispath -name applicationPool -value "$apppool"
+    } Else {
+        New-Item $iisPath -physicalPath $path -bindings $bindings -applicationPool $apppool
+    }
+}
+
 Export-ModuleMember -function Start-Download, Expand-Zip, New-Zip, `
                               Remove-EmptyFolders, Convert-Configuration, `
-                              Convert-Xml, Copy-WebProject
+                              Convert-Xml, Copy-WebProject, Set-IISSite
