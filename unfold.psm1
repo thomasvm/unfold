@@ -155,7 +155,9 @@ function Invoke-Script
 
     # Run locally if localhost
     if($machine -eq "localhost") {
-        $folder = pwd
+        # use silly name so call to script block
+        # doesn't overwrite
+        $abcdef = pwd
 
         If(-not $currentContext.scriptLoaded) {
              Foreach($key in $currentContext.scripts.keys) {
@@ -182,8 +184,8 @@ function Invoke-Script
         $ret = . $MyInvocation.MyCommand.Module $scriptblock $arguments
 
         # Back to original folder
-        If(Test-Path $folder) {
-            cd $folder
+        If(Test-Path $abcdef) {
+            cd $abcdef
         }
 
         return $ret
@@ -197,7 +199,9 @@ function Invoke-Script
     
         $scr = $ExecutionContext.InvokeCommand.NewScriptBlock($script)
 
-        $folder = pwd
+        # use silly name so call to script block
+        # doesn't overwrite
+        $abcdef = pwd
     
         if($config.basePath -and (Test-Path $config.basePath)) {
             cd $config.basePath
@@ -205,7 +209,9 @@ function Invoke-Script
     
         $r = .$scr $arguments
 
-        cd $folder
+        If(Test-Path $abcdef) {
+            cd $abcdef
+        }
 
         return $r
     }    
