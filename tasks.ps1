@@ -32,8 +32,10 @@ task updatecode -depends setup -description "updates the code from scm" {
     Set-ForceLocalInvokeScript $true
     Invoke-Script {
         If(-not (Test-Path code)) {
+            Write-Host "Performing initial checkout"
             .$scm.initialcheckout
         } Else {
+            Write-Host "Updating source code"
             .$scm.updatecode
         }
     }
@@ -44,6 +46,7 @@ task build -depends updatecode -description "Builds the code using msbuild" {
     $customBuild = Get-Task custombuild
 
     If($customBuild) {
+        Write-Host "Custom build task defined, using that instead of default build"
         Invoke-Task custombuild
         return
     }
@@ -110,6 +113,7 @@ task release -depends build -description "Puts the built code inside a release f
     $customReleaseTask = Get-Task customrelease
 
     If($customReleaseTask) {
+        Write-Host "customrelease task defined, overruling default release"
         Invoke-Task customrelease
         return
     }
@@ -153,10 +157,13 @@ task release -depends build -description "Puts the built code inside a release f
 
     # release the project
     Invoke-Script {
+        Write-Host "Trying to find web application project in msbuild files"
         Foreach($csproj in $config.msbuild) {
            $wapGuids = Get-Content $csproj | Where-Object { $_.Contains($config.wapguid) }
 
             if($wapGuids) {
+                Write-Host "Web application project found: $csproj"
+
                 $source = "$(Split-Path $csproj)"
                 $destination = ".\$($config.releasepath)\web"
                 Write-Host "Copying $source to $destination"  -Fore Green
@@ -176,6 +183,7 @@ task release -depends build -description "Puts the built code inside a release f
 
 task releasefinalize -depends release -description "Marks the release as finalized (ready for configuration)" {
     If($config.localbuild) {
+        Write-Host "Using localbuild, copying release to remote machine"
         Invoke-Script {
             New-Zip $config.releasepath "$($config.releasepath).zip"
         }
@@ -206,6 +214,7 @@ task releasefinalize -depends release -description "Marks the release as finaliz
 
 task setupapppool -description "Configures application pool" {
     If(Get-Task customsetupapppool) {
+        Write-Host "customsetupapppool task defined, overruling default setupapppool"
         Invoke-Task customsetupapppool
         return
     }
@@ -224,6 +233,8 @@ If the apppool configuration setting is missing we will take the project name:
         throw $msg
     }
 
+    Write-Host "Application pool is $apppool"
+
     # ensure its on the config
     $config.apppool = $apppool
 
@@ -234,6 +245,7 @@ If the apppool configuration setting is missing we will take the project name:
 
         $appPool = "iis:\AppPools\$($arguments.apppool)"
         If ((Test-Path $appPool) -eq $false) {
+            Write-Host "Creating application pool..."
             New-Item $appPool
         }
         Set-ItemProperty $appPool -name managedRuntimeVersion -value $arguments.runtime
@@ -249,18 +261,22 @@ If the apppool configuration setting is missing we will take the project name:
 }
 
 task uninstallcurrentrelease -description "If possible: puts App_Offline in place to stop the application" {
-    If(Get-Task customdisablecurrentrelease) {
-        Invoke-Task customdisablecurrentrelease
+    If(Get-Task customuninstallcurrentrelease) {
+        Invoke-Task customuninstallcurrentrelease
         return
     }
 
     If(Test-Path "$($config.basePath)\current\App_Offline.html") {
+        Write-Host "Moving App_Offline.html to App_Offline.htm"
         Move-Item "$($config.basePath)\current\App_Offline.html" "$($config.basePath)\current\App_Offline.htm"
+    } Else {
+        Write-Host "No App_Offline.html file found, skipping."
     }
 }
 
 task setupiis -description "Creates/updates the IIS website configuration" {
     If(Get-Task customsetupiis) {
+        Write-Host "customsetupiis task defined, overruling default setupiis"
         Invoke-Task customsetupiis
         return
     }
@@ -309,6 +325,10 @@ task setupiis -description "Creates/updates the IIS website configuration" {
         $iisName = $arguments.iisName
         $bindings = $arguments.bindings
         $outputPath = "$($config.basePath)\$($config.releasepath)\web"
+
+        Write-Host "Configuring IIS site: $iisName"
+        Write-Host "  pointing to path: $outputPath"
+        Write-Host "  apppool $($config.apppool)"
 
         Set-IISSite -name $iisName `
                     -path $outputPath `
