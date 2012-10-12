@@ -4,6 +4,7 @@ Unfold is a **Capistrano for .net** and/or Windows machines. It gives you the ab
 For updates and info, please check [my blog](http://thomasvm.github.com)
 * An [introduction](http://thomasvm.github.com/blog/2012/10/02/introducing-unfold/)
 * A full explanation of the [deployment tasks](http://thomasvm.github.com/blog/2012/10/10/the-unfold-tasks/)
+* An example extension: [minifying css and javascript](http://thomasvm.github.com/blog/2012/10/11/unfold-task-hooks/)
 
 ## Getting started
 The easiest way to get up and running is through nuget. In the Package Manager Console simply type 
