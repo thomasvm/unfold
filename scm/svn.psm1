@@ -47,8 +47,8 @@ function Get-ScmCommands
                 cd ..
             }
         }
-        getcommit = $getcommit,
-        getcommitnumber = $getcommit,
+        getcommit = $getcommit
+        getcommitnumber = $getcommit
         help = {
             Run-Svn help commit
         }
