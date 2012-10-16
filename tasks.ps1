@@ -266,11 +266,13 @@ task uninstallcurrentrelease -description "If possible: puts App_Offline in plac
         return
     }
 
-    If(Test-Path "$($config.basePath)\current\App_Offline.html") {
-        Write-Host "Moving App_Offline.html to App_Offline.htm"
-        Move-Item "$($config.basePath)\current\App_Offline.html" "$($config.basePath)\current\App_Offline.htm"
-    } Else {
-        Write-Host "No App_Offline.html file found, skipping."
+    Invoke-Script {
+        If(Test-Path ".\current\web\App_Offline.html") {
+            Write-Host "Moving App_Offline.html to App_Offline.htm"
+            Move-Item ".\current\web\App_Offline.html" ".\current\web\App_Offline.htm"
+        } Else {
+            Write-Host "No App_Offline.html file found, skipping."
+        }
     }
 }
 
