@@ -157,6 +157,8 @@ function Remove-EmptyFolders {
     param(
         [Parameter(Position=0,Mandatory=1)][string]$path
     )
+    $hasDeleted = $false
+
     Get-ChildItem $path -Recurse | Foreach-Object {
         If(-not $_.PSIsContainer) {
             return
@@ -166,9 +168,15 @@ function Remove-EmptyFolders {
         {
               Write-Host "Remove item: " + $_.FullName
               Remove-Item $_.FullName
+              $hasDeleted = $true
         }
         $subitems = $null
     }
+
+    # Loop again until we don't remove any folder anymore
+    If($hasDeleted) {
+        Remove-EmptyFolders $path
+    } 
 }
 
 function Copy-WebProject {
