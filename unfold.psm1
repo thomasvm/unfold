@@ -77,7 +77,7 @@ function Initialize-Configuration {
 
     # Not local to deploy.ps1 path, check our own
     If(-not (Test-Path $scm)) {
-        $unfoldPath = "$scriptPath\scm\$scm.psm1"
+        $unfoldPath = "$scriptPath\lib\scm\$scm.psm1"
         If(Test-Path $unfoldPath) {
             $scm = $unfoldPath
         }
