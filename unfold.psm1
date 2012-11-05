@@ -175,7 +175,7 @@ function Invoke-Script
 
         # change to base path 
         if($basePath -and (Test-Path $basePath)) {
-            cd $basePath
+            cd $basePath 
         } 
 
         # Run the script
@@ -345,6 +345,17 @@ function Import-DefaultTasks
 {
     $defaultPath = join-path $scriptPath "tasks.ps1"
     . $defaultPath
+
+    If($config.migrations) {
+        Write-Host "Attempt to load database migration tasks"
+        foreach($migrationPath in @(".\$($config.migrations).ps1",
+                                    "$scriptPath\lib\migrations\$($config.migrations).ps1")) {
+            If(Test-Path $migrationPath) {
+                .$migrationPath
+                break
+            }
+        }
+    }
 }
 
 # BeforeTask and AfterTask functions
