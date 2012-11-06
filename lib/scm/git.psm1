@@ -65,9 +65,9 @@ function Get-ScmCommands
 
     $commands.getcommitnumber = {
         cd code
-        $count = git log --oneline | wc -l
+        $count = (git log --oneline | Measure-Object -l).Lines
         cd ..
-        return $count.Trim()
+        return $count
     }
 
     return $commands
