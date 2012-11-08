@@ -98,8 +98,9 @@ task build -depends updatecode -description "Builds the code using msbuild" {
         $config.buildconfiguration = "Debug"
     }
 
-    Invoke-Script {
-        Foreach($file in $config.msbuild) {
+    Foreach($file in $config.msbuild) {
+        Invoke-Script -arguments $file {
+            param($file)
             Write-Host "Building file $file" -Fore Green
             # Wrap in exec to stop on failure
             Exec {
