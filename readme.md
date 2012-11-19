@@ -7,10 +7,14 @@ For updates and info, please check [my blog](http://thomasvm.github.com)
 * An [introduction](http://thomasvm.github.com/blog/2012/10/02/introducing-unfold/)
 * A full explanation of the [deployment tasks](http://thomasvm.github.com/blog/2012/10/10/the-unfold-tasks/)
 * An example extension: [minifying css and javascript](http://thomasvm.github.com/blog/2012/10/11/unfold-task-hooks/)
+* [How unfold handles rollback](http://thomasvm.github.com/blog/2012/10/29/how-unfold-handles-rollback/)
+* Configuring [local builds](http://thomasvm.github.com//blog/2012/11/12/making-unfold-do-a-local-build/)
 
 Unfold depends on the following technologies
 * For task configuration we depend on [psake](https://github.com/psake/psake)
-* For access to remote machines we used powershell remoting, the SSH for windows. 
+* For access to remote machines we used powershell remoting, the SSH for windows. Check the 
+  [wiki](https://github.com/thomasvm/unfold/wiki/Setting-up-Powershell-Remoting)for instructions on how to set this up 
+  on the deployment target.
 
 ## Installation
 There are two ways of installing Unfold
