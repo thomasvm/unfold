@@ -1,7 +1,9 @@
 task buildmigrations {
     If(-not $config.fluentmigrator.msbuild) {
         Write-Warning "No migrations msbuild project configured"
-        Write-Warning "Please add Set-Config migrationsmsbuild '.\code\path\to\msbuild\msbuild.csproj'"
+        Write-Warning "Please add Set-Config fluentmigrator @{"
+        Write-Warning "                 msbuild = '.\code\path\to\msbuild\msbuild.csproj'"
+        Write-Warning "                 }"
         Write-Warning "to your deploy.ps1 file"
         return
     }
