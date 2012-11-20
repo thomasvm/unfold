@@ -57,7 +57,8 @@ Set-AfterTask release releasemigrations
 
 task runmigrations {
     If($config.rollback) {
-        throw "Rollback not supported yet"
+        Write-Warning "Rollback not supported yet"
+        return
     }
 
     Invoke-Script {
