@@ -9,7 +9,7 @@ Set-Config default dev
 
 # Specify a custom set of build files, don't forget
 # to prepend with ".\code\" because that is the remote checkout folder
-# Set-Config msbuild = @('.\code\path\to\build.csproj')
+# Set-Config msbuild @('.\code\path\to\build.csproj')
 
 # For custom apppool name
 # Set-Config apppool "your.apppool"
