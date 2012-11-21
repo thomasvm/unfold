@@ -61,25 +61,27 @@ task runmigrations {
         return
     }
 
-    Invoke-Script {
-        $migrate = ".\$($config.releasepath)\database\Migrate.exe"
+    $target = $config.releasepath
+    If(-not $target) {
+        $target = Get-CurrentFolder
+    }
+
+    Invoke-Script -arguments $target {
+        param($target)
+        $migrate = ".\$target\database\Migrate.exe"
 
         $migrationsAssembly = $config.fluentmigrator.assembly
         If(-not $migrationsAssembly) {
             $migrationsCsProj = Get-Item $config.fluentmigrator.msbuild
             $name = $migrationsCsProj | Select-Object -expand basename
 
-            $csProjFolder = $(Split-path $config.fluentmigrator.msbuild)
-
-            # derive assembly name from name of csproj and check whether it exists
-            $assembly = "$csProjFolder\bin\$($config.buildConfiguration)\$name.dll" 
-
-            If(Test-Path $assembly) {
-                $migrationsAssembly = $assembly
-            }
+            $migrationsAssembly = "$name.dll"
         }
 
-        If(-not $migrationsAssembly) {
+        # derive assembly name from name of csproj and check whether it exists
+        $assembly = ".\$target\database\$migrationsAssembly" 
+
+        If(-not (Test-Path $assembly)) {
             throw "Migration error: unable to locate migration assembly"
         }
 
@@ -89,7 +91,7 @@ task runmigrations {
         }
 
         Exec {
-            &$migrate --task=migrate --a="$migrationsAssembly" --db=$provider
+            &$migrate --task=migrate --a="$assembly" --db=$provider
         }
     }
 }
