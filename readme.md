@@ -36,7 +36,7 @@ Install-Package unfold
 ## Quickstart
 Now that unfold is in your project:
 
-1. open the `deploy.ps1` file, it contains both the configuration values and custom tasks for your project. This is what you customize. Note that Visual Studio by default does not have support for PowerShell syntax highlighting, you might want to open the file in another editor or consider installing [PowerGUI extensions](http://visualstudiogallery.msdn.microsoft.com/01516103-d487-4a7e-bb40-c15ec709afa3/) or [TextHighlighterExtensionSetup](http://visualstudiogallery.msdn.microsoft.com/6706b602-6f10-4fd1-8e14-75840f855569/)
+1. open the `deploy.ps1` file, it contains both the configuration values and custom tasks for your project. This is what you customize. Note that Visual Studio by default does not have support for PowerShell syntax highlighting, you might want to open the file in another editor or consider installing [PowerGUI extensions](http://visualstudiogallery.msdn.microsoft.com/01516103-d487-4a7e-bb40-c15ec709afa3/) or [TextHighlighterExtensionSetup](http://visualstudiogallery.msdn.microsoft.com/6706b602-6f10-4fd1-8e14-75840f855569/). Or you could simply use any other code editor.
 2. have a look at the [examples](https://github.com/thomasvm/unfold/tree/master/examples)
 3. Open a powershell command-line into the deployment folder and execute (or change the directory of the Package Manager Console to the deployment folder)
 
@@ -66,4 +66,5 @@ Executing Unfold happens through the `unfold.ps1` script. The following options 
 
 * hg support, and other scms
 * native support for database migration runners like FluentMigrator, DbUp or Entity Framework Migrations
+* support for deploying to multiple machines. At the moment there can be only one target.
 * Create-AssemblyInfo function for generating a shared assembmy info. Based on [this](https://github.com/ayende/rhino-mocks/blob/master/psake_ext.ps1)
