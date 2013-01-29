@@ -46,24 +46,44 @@ task runmigrations {
         return
     }
 
-    $migrationsAssembly = $config.fluentmigrator.assembly
-    If(-not $migrationsAssembly) {
-        $migrationsCsProj = Get-Item $config.fluentmigrator.msbuild
-        $name = $migrationsCsProj | Select-Object -expand basename
+    Invoke-Script {
+        # Assembly name defined in config? use it
+        $migrationsAssembly = $config.dbup.assembly
 
-        $csProjFolder = $(Split-path $config.fluentmigrator.msbuild)
+        # Otherwise, we derive the name from the csproj file
+        If(-not $migrationsAssembly) {
+            $migrationsCsProj = Get-Item $config.dbup.msbuild
+            $name = $migrationsCsProj | Select-Object -expand basename
 
-        # derive assembly name from name of csproj and check whether it exists
-        $assembly = "$csProjFolder\bin\$($config.buildConfiguration)\$name.dll" 
+            $csProjFolder = $(Split-path $config.dbup.msbuild)
 
-        If(Test-Path $assembly) {
-            $migrationsAssembly = $assembly
+            # derive assembly name from name of csproj and check whether it exists
+            $assembly = "$csProjFolder\bin\$($config.buildConfiguration)\$name.exe" 
+
+            If(Test-Path $assembly) {
+                $migrationsAssembly = $assembly
+            }
+        }
+
+        If(-not $migrationsAssembly) {
+            throw "Migration error: unable to locate migration assembly"
+        }
+
+        $extraArgs = $config.dbup.args
+
+        If(-not $extraArgs) {
+            $extraArgs = ''
+        }
+
+        Exec {
+            &$migrationsAssembly $extraArgs
         }
     }
-
-    If(-not $migrationsAssembly) {
-        throw "Migration error: unable to locate migration assembly"
-    }
-
- 
 }
+
+# Only if explicitely disabled automigrate
+# we don't hookup to the migrations task
+If($config.automigrate -ne $false) {
+    Set-BeforeTask setupiis runmigrations
+}
+
