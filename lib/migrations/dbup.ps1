@@ -7,13 +7,13 @@
 # The deployment extension consists of three step
 # * building the project in order to generate the migrations assembly
 # * putting the build result inside a database folder under an unfold release
-# * executing the migration
+# * executing the migrations
 #
 # Configuration options
 # Set-Config migrations dbup # tell unfold to include this file
 # Set-Config dbup @{
 #   msbuild = ".\code\path\to\dbupproject.csproj" # path to dbup project
-#   extraargs = "--extra args --for theassembly"
+#   extraargs = "--extra args --for theassembly" # (optional) 
 # }
 # Set-Config automigrate $true # this will automatically run migrations on deployment
 
