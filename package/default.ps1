@@ -1,12 +1,12 @@
 $config = New-Object PSObject -property @{ 
-    version="0.4.0";
+    version="0.4.1";
     releaseNotes=@"
-Additional functionality:
-* Possibility to build an package locally in order to decrease number of required build tools on deployment server
-* Full Powershell zip functions for both creating and unpacking zips
-* Functions for copying files to target machine over PSSession
-* Make WinRM port configurable
-* Lots and lots of bug fixes
+This release introduces full support for FluentMigrator and DbUp
+migrations. Simply by specifying some configuration options the 
+deployment process now builds, releases and executes the pending
+database migrations. 
+
+Also : lots and lots of bug fixes
 "@
 }
 
