@@ -100,6 +100,5 @@ task runmigrations {
 # we don't hookup to the migrations task
 If($config.automigrate -ne $false) {
     Set-BeforeTask setupiis runmigrations
-    return
 }
 
