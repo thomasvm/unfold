@@ -1,3 +1,23 @@
+# Support for FluentMigrator based migrations. 
+#
+# FluentMigrator based migrations typically are put in a separate project 
+# inside your solution. This project creates an assembly that is loaded
+# by Migrate.exe, a FluentMigrator tool to actually execute the migrations
+#
+# The deployment extension consists of three step
+# * building the project in order to generate the migrations assembly
+# * putting the build result inside a database folder under an unfold release
+# * executing the migrations
+#
+# Configuration options
+# Set-Config migrations fluentmigrator # tell unfold to include this file
+# Set-Config fluentmigrator @{
+#   msbuild = ".\code\path\to\fluentmigrator.csproj" # path to dbup project
+#   assembly = ".\code\path\to\outputassembly.dll" # (optional) in case name cannot be derived
+#   provider = "sqlserver2009" # provider the Migrate.exe assembly should use
+# }
+# Set-Config automigrate $true # this will automatically run migrations on deployment
+
 task buildmigrations {
     If(-not $config.fluentmigrator.msbuild) {
         Write-Warning "No migrations msbuild project configured"
@@ -40,7 +60,7 @@ task releasemigrations {
     Write-Host "Copying Migrate.exe to release folder"
     Invoke-Script {
         param($outputPath)
-        $migrate = Get-ChildItem . -Recurse | Where-Object { $_.Name -eq "Migrate.exe" } | Select-Object -last 1
+        $migrate = Get-ChildItem .\code -Recurse | Where-Object { $_.Name -eq "Migrate.exe" } | Select-Object -last 1
 
         If(-not $migrate) {
             Write-Warning "Migrate.exe migration tool not found"
