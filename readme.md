@@ -1,7 +1,10 @@
 # Unfold
-Unfold is a **Capistrano for .net** and/or Windows machines. It gives you the ability to easily create and customize 
-your deployment scenario's without having to resort to complex tools that are hard to automize or difficult to setup. 
+Unfold is a complete **deployment solution** for .net based web applications. It gives you the ability to easily create and 
+customize your deployment scenario's without having to resort to complex tools that are hard to automize or difficult to setup. 
 Unfold is _only_ powershell, so there's very little magic going on under the hood. 
+
+Check [Getting Started](https://github.com/thomasvm/unfold/wiki/Getting-Started) wiki page for installation instructions 
+and a quickstart
 
 For updates and info, please check [my blog](http://thomasvm.github.com)
 * An [introduction](http://thomasvm.github.com/blog/2012/10/02/introducing-unfold/)
@@ -10,59 +13,78 @@ For updates and info, please check [my blog](http://thomasvm.github.com)
 * [How unfold handles rollback](http://thomasvm.github.com/blog/2012/10/29/how-unfold-handles-rollback/)
 * Configuring [local builds](http://thomasvm.github.com//blog/2012/11/12/making-unfold-do-a-local-build/)
 
-Unfold depends on the following technologies
+## Example
+The code snippet below is the _entire_ deployment script for RaccoonBlog
+
+```posh
+## A deployment example for RaccoonBlog, the blog engine that's powering
+## blogs like Ayende's
+
+# Configuration
+Set-Config project "raccoonblog"
+
+Set-Config scm git
+Set-Config repository "https://github.com/fitzchak/RaccoonBlog.git"
+
+# Environment to use when not specified
+Set-Config default dev
+
+Set-Config msbuild @('.\code\RaccoonBlog.Web\RaccoonBlog.Web.csproj')
+
+# For custom apppool name
+Set-Config apppool "raccoonblog"
+
+# Environments
+Set-Environment dev {
+    Set-Config basePath "c:\inetpub\wwwroot\raccoon"
+
+    # machine to deploy to
+    Set-Config machine "localhost"
+}
+
+Set-Environment staging {
+    Set-Config basePath "d:\sites\raccoon"
+    Set-Cpnfig machine "122.123.124.125" # ip address where WinRM is configured
+}
+
+# Tasks
+Import-DefaultTasks
+
+# Set deploy as default task
+task Default -depends "deploy"
+```
+
+Executing a deployment is now simply a matter of executing the following PowerShell command in
+the folder where your deployment script resides
+
+```posh
+.\unfold.ps1 deploy -to staging
+```
+
+## Features
+
+* Can deploy to both local and remote machines
+
+* Deployments are based on what's in source control (git, svn) not what's in your working copy
+
+* Rollback
+
+* Deployment flow can be extended and/or customized through task hooks in order to allow advanced scenarios like
+    * setting up a static website to server your images, js and css
+    * migrating the database
+    * modifying Web.config or other configuration files
+
+## Dependencies
+
+There's nothing extra you need to install. Everything comes out-of-the-box.
+
+Unfold depends on the following technologies. They are included in the installation.
 * For task configuration we depend on [psake](https://github.com/psake/psake)
 * For access to remote machines we used powershell remoting, the SSH for windows. Check the 
   [wiki](https://github.com/thomasvm/unfold/wiki/Setting-up-Powershell-Remoting)for instructions on how to set this up 
   on the deployment target.
 
-## Installation
-There are two ways of installing Unfold
-
-1. The recommended way is to [install Unfold in your user profile](/thomasvm/unfold/wiki/Install-in-your-powershell-profile)
-2. Alternatively you can also install Unfold locally inside the project you want to deploy, to do so in the 
-   Visual Studio Package Manager Console simply type 
-
-```posh
-Install-Package unfold
-```
-   
-   Preferrably inside a web project, but this is not required. This creates a `deployment` folder in your project containing:
-   
-   * a local copy of the unfold powershell library
-   * an `unfold.ps1` launcher script that can be used to launch deployment commands
-   * the most important file: `deploy.ps1`, containing configuration settings and deployment tasks for your project
-
-## Quickstart
-Now that unfold is in your project:
-
-1. open the `deploy.ps1` file, it contains both the configuration values and custom tasks for your project. This is what you customize. Note that Visual Studio by default does not have support for PowerShell syntax highlighting, you might want to open the file in another editor or consider installing [PowerGUI extensions](http://visualstudiogallery.msdn.microsoft.com/01516103-d487-4a7e-bb40-c15ec709afa3/) or [TextHighlighterExtensionSetup](http://visualstudiogallery.msdn.microsoft.com/6706b602-6f10-4fd1-8e14-75840f855569/). Or you could simply use any other code editor.
-2. have a look at the [examples](https://github.com/thomasvm/unfold/tree/master/examples)
-3. Open a powershell command-line into the deployment folder and execute (or change the directory of the Package Manager Console to the deployment folder)
-
-	```posh
-        .\unfold.ps1 deploy
-	```		
-
-4. check the output and adjust the configuration as needed
-5. customize your deployment by writing custom tasks to the `deploy.ps1` file
-
-## Usage
-Executing Unfold happens through the `unfold.ps1` script. The following options are available
-
-1. Executing a target, the default target (if any) is defined in your `deploy.ps1` script
-
-        .\unfold.ps1 deploy
-
-2. For a list of all available tasks, you can pass in the `-docs` switch
-
-        .\unfold.ps1 -docs
-
-3. Some tasks can have parameters (e.g. rollback) these are passed in using the -properties parameter, combined with a hashtable
-
-        .\unfold.ps1 rollback -properties @{to=5} -on production
-
-### TODO
+## TODO
 
 * hg support, and other scms
 * native support for database migration runners like FluentMigrator, DbUp or Entity Framework Migrations
