@@ -14,7 +14,8 @@ For updates and info, please check [my blog](http://thomasvm.github.com)
 * Configuring [local builds](http://thomasvm.github.com//blog/2012/11/12/making-unfold-do-a-local-build/)
 
 ## Example
-The code snippet below is the _entire_ deployment script for RaccoonBlog
+The code snippet below is the _entire_ deployment script for [RaccoonBlog](https://github.com/fitzchak/RaccoonBlog), the
+blogging engine behind [Ayende's blog](http://ayende.com).
 
 ```posh
 ## A deployment example for RaccoonBlog, the blog engine that's powering
