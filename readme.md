@@ -45,7 +45,7 @@ Set-Environment dev {
 
 Set-Environment staging {
     Set-Config basePath "d:\sites\raccoon"
-    Set-Cpnfig machine "122.123.124.125" # ip address where WinRM is configured
+    Set-Config machine "122.123.124.125" # ip address where WinRM is configured
 }
 
 # Tasks
