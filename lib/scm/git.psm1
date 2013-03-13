@@ -21,25 +21,21 @@ function Get-Branch {
     return $branch
 }
 
-function Checkout-Branch {
-    $branch = Get-Branch
-    Run-WithErrorAction "Continue" {
-        git checkout $branch 2> $null
-    }
-}
-
 function Get-ScmCommands
 {
     $commands = @{}
 
     $commands.initialcheckout = {
+        $branch = Get-Branch
+
         Run-WithErrorAction "Continue" {
             git clone $config.repository code 2> $null 
+             
+            # checkout in local 'deploy' branch
+            cd code
+            git checkout -b deploy "origin/$branch"
+            cd ..
         }
-
-        cd code
-        Checkout-Branch
-        cd ..
     }
 
     $commands.updatecode = {
@@ -49,8 +45,10 @@ function Get-ScmCommands
         Exec {
             Run-WithErrorAction "Continue" {
                 git fetch 2> $null
-                git merge "origin/$branch" 2> $null
-                git checkout . 2> $null
+                git fetch --tags origin 2> $null
+
+                # Point local deploy branch to origin
+                git reset --hard "origin/$branch" 2> $null
             }
         }
         cd ..
