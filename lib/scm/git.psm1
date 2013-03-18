@@ -21,6 +21,25 @@ function Get-Branch {
     return $branch
 }
 
+function Ensure-OnDeployBranch {
+    $branch = Get-Branch
+    $deployBranch = git branch | `
+                        where-object { $_.Split()[1] -eq 'deploy' } | `
+                        select-object { $_ } 
+# @{ branch='deploy'; iscurrent = $($_.Split()[0] -eq '*') } }
+
+    write-host $deployBranch
+
+    If(-not $deployBranch) {
+        git checkout -b deploy
+    } ElseIf(-not $deployBranch.iscurrent) {
+        write-host "checking out existing"
+        git checkout deploy
+    }
+
+    git reset --hard "origin/$branch" 2> $null
+}
+
 function Get-ScmCommands
 {
     $commands = @{}
@@ -33,7 +52,7 @@ function Get-ScmCommands
              
             # checkout in local 'deploy' branch
             cd code
-            git checkout -b deploy "origin/$branch"
+            Ensure-OnDeployBranch
             cd ..
         }
     }
@@ -48,7 +67,7 @@ function Get-ScmCommands
                 git fetch --tags origin 2> $null
 
                 # Point local deploy branch to origin
-                git reset --hard "origin/$branch" 2> $null
+                Ensure-OnDeployBranch
             }
         }
         cd ..
