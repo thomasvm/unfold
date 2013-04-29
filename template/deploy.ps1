@@ -19,7 +19,7 @@ Set-Environment dev {
 
     # machine to deploy to
     Set-Config machine "localhost"
-    # For remote machines, specify ip-adres or machine name
+    # For remote machines, specify ip-address or machine name
     # the credentials must be added to the Windows Credential Manager
     # as a Generic Credential
     # Set-Config machine "123.456.0.78"
