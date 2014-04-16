@@ -1,6 +1,6 @@
 # Unfold
 Unfold is a complete **deployment solution** for .net based web applications. It gives you the ability to easily create and 
-customize your deployment scenario's without having to resort to complex tools that are hard to automize or difficult to setup. 
+customize your deployment scenario's without having to resort to complex tools that are hard to automate or difficult to setup. 
 Unfold is _only_ powershell, so there's very little magic going on under the hood. 
 
 Check [Getting Started](https://github.com/thomasvm/unfold/wiki/Getting-Started) wiki page for installation instructions 
