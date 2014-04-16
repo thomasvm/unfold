@@ -26,14 +26,12 @@ function Ensure-OnDeployBranch {
     $deployBranch = git branch | `
                         where-object { $_.Split()[1] -eq 'deploy' } | `
                         select-object { $_ } 
-# @{ branch='deploy'; iscurrent = $($_.Split()[0] -eq '*') } }
-
-    write-host $deployBranch
 
     If(-not $deployBranch) {
+        Write-Host 'Creating new branch deploy'
         git checkout -b deploy
-    } ElseIf(-not $deployBranch.iscurrent) {
-        write-host "checking out existing"
+    } Else {
+        Write-Host 'Checking out branch deploy'
         git checkout deploy
     }
 
