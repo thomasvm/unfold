@@ -32,7 +32,7 @@ function Ensure-OnDeployBranch {
         git checkout -b deploy
     } Else {
         Write-Host 'Checking out branch deploy'
-        git checkout deploy
+        git checkout deploy 2> $null
     }
 
     git reset --hard "origin/$branch" 2> $null
