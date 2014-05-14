@@ -341,24 +341,23 @@ task setupiis -description "Creates/updates the IIS website configuration" {
 }
 
 task finalize -description "Creates a link pointing to current release" {
-    $currentPath = Join-Path $config.basePath "current" 
 
-    Invoke-Script -arguments @{currentPath=$currentPath} {
-        param($arguments) 
+    Invoke-Script {
+        $currentPath = Join-Path $config.basePath "current" 
 
-        If(Test-Path $arguments.currentPath) {
+        If(Test-Path $currentPath) {
             Exec {
-                cmd /c rmdir $arguments.currentPath
+                cmd /c rmdir $currentPath
             }
         }
 
         Exec {
-            cmd /c "mklink /d $($arguments.currentPath) $($config.releasepath)"
+            cmd /c "mklink /d $($currentPath) $($config.releasepath)"
         }
 
-        If(Test-Path "$($arguments.currentPath)\web\App_Offline.htm") {
+        If(Test-Path "$($currentPath)\web\App_Offline.htm") {
             Write-Host "Moving App_Offline out of the way"
-            Move-Item "$($arguments.currentPath)\web\App_Offline.htm" "$($arguments.currentPath)\web\App_Offline.html"
+            Move-Item "$($currentPath)\web\App_Offline.htm" "$($currentPath)\web\App_Offline.html"
         } Else {
             Write-Host "No App_Offline.htm file found"
         }
