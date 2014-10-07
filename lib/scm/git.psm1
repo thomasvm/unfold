@@ -29,7 +29,7 @@ function Ensure-OnDeployBranch {
 
     If(-not $deployBranch) {
         Write-Host 'Creating new branch deploy'
-        git checkout -b deploy
+        git checkout -b deploy 2> $null
     } Else {
         Write-Host 'Checking out branch deploy'
         git checkout deploy 2> $null
