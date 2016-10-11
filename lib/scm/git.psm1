@@ -46,7 +46,8 @@ function Get-ScmCommands
         $branch = Get-Branch
 
         Run-WithErrorAction "Continue" {
-            git clone $config.repository code 2> $null 
+            write-host "cloning...${$config.repository}"
+            git clone $config.repository code # 2> $null 
              
             # checkout in local 'deploy' branch
             cd code
