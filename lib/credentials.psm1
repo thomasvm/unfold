@@ -152,6 +152,9 @@ function Get-CMCredential
         $cred = $critCred.GetCredential()
         $username = $cred.UserName
         $securePassword = $cred.CredentialBlob | ConvertTo-SecureString -AsPlainText -Force
+
+        $pwd = ConvertFrom-SecureString $securePassword
+
         $cred = $null
         return new-object System.Management.Automation.PSCredential $username, $securePassword
     } else {
