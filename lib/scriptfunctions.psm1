@@ -185,9 +185,27 @@ function Copy-WebProject {
         [Parameter(Position=1,Mandatory=1)][string]$destination
     )
     $sourceLength = (Resolve-Path $path).Path.Length
-    Get-ChildItem $path -Recurse -Exclude @('*.cs', '*.csproj') | Copy-Item -Destination {
-        $result = Join-Path $destination $_.FullName.Substring($sourceLength)
-        return $result
+
+    Foreach($item in Get-ChildItem $path) {
+        if (-not $item.PSIsContainer) {
+            Copy-Item -Destination "$destination\$($item.Name)" $item.FullName
+            continue
+        }
+
+        if ($config.excludeWebFolders) {
+            if ($config.excludeWebFolders -contains $item.Name) {
+                continue
+            }
+        }
+
+        New-Item -type Directory -name "$destination\$($item.Name)"
+        Write-Host "copying $($item.Name)..." -Fore Yellow
+
+        Get-ChildItem $item.FullName -Recurse -Exclude @('*.cs', '*.csproj') `
+            | Copy-Item -Destination {
+                $result = Join-Path $destination $_.FullName.Substring($sourceLength)
+                return $result
+             }
     }
 }
 
